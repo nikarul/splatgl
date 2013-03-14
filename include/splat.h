@@ -20,17 +20,17 @@
 */
 
 /**
- * \file splat.h 
+ * @file splat.h 
  *  
  * Main include header for Splat
  */
 
 /**
- *  \mainpage Splat 2D Rendering Library
+ *  @mainpage Splat 2D Rendering Library
  *  
  *  http://www.digitalbytes.net/libsplat/
  *  
- *  \section intro_sec Introduction
+ *  @section intro_sec Introduction
  *  
  *  This is Splat, an SDL-based 2D sprite/tile rendering library.
  *  
@@ -272,9 +272,10 @@ protected: \
   class D##name##; \
   unique_ptr<D##name##> d;
 
-class Exception : public std::exception {};
-class BadParameterException : public exception {};
-class UninitializedException : public exception {};
+class DECLSPEC Exception : public std::exception {};
+class DECLSPEC BadParameterException : public Exception {};
+class DECLSPEC UninitializedException : public Exception {};
+class DECLSPEC WrongCanvasException : public Exception {};
 
 /**
  *  Prepares Splat for rendering.
@@ -285,7 +286,7 @@ class UninitializedException : public exception {};
  *  @raises BadParameterException - If window is not a valid
  *          SDL_Window pointer.
  */
-void Prepare(SDL_Window *window) throws(Exception);
+DECLSPEC void Prepare(SDL_Window *window) throws(Exception);
 
 /** 
  *  Shuts down Splat and frees any unreleased resources.
@@ -296,12 +297,12 @@ void Prepare(SDL_Window *window) throws(Exception);
  *  @raises UninitializedExceptions - If Splat is not properly
  *          initialized by Splat::Prepare()
  */ 
-void Finish();
+DECLSPEC void Finish();
 
 /**
  * Base class for standard Splat classes
  */
-class Object {
+class DECLSPEC Object {
 protected:
   Object();
   ~Object();
@@ -314,7 +315,7 @@ protected:
 /**
  * Image instance class
  */
-class Instance : public Object {
+class DECLSPEC Instance : public Object {
   SPLAT_OBJECT_DECL(Instance);
 
 public:
@@ -342,33 +343,93 @@ public:
    * 
    * @param layer - Layer to render this instance 
    *  
-   * @raises BadParameterException - Thrown if position is 
+   * @raises BadParameterException - Thrown if layer is 
    *         invalid.
+   * @raises WrongCanvasException - If the layer does belong to 
+   *         the same canvas as this instance.
    */
   void SetLayer(Layer *layer) throw (Exception);
-  Layer *GetLayer() throw (Exception);
-  void SetImage(Image *image) throw (Exception);
+
+  /**
+   * Get the layer for this instance.
+   * 
+   * @return Layer in which this instance renders
+   */
+  Layer *GetLayer();
+
+  /**
+   * Set the image the instance refers. 
+   *  
+   * If subimage is not NULL, it specifies the bounds of the image 
+   * to display.  If image is NULL, only the subimage is updated. 
+   * If both are NULL, the instance is updated to the full size of 
+   * the image. 
+   * 
+   * @param image - Image to use for rendering.  If this is null, 
+   *              keep the existing image, just update the
+   *              subimage.
+   * @param subimage - Pointer to SDL_Rect that specifies the 
+   *                 subimage to use in pixels.  If null, assume
+   *                 the full bounds of the image.
+   *  
+   * @raises BadParameterException - If image or subimage is 
+   *         invalid.
+   * @raises WrongCanvasException - If the image does belong to 
+   *         the same canvas as this instance.
+   */
+  void SetImage(Image *image, SDL_Rect *subimage = nullptr) throw (Exception);
 };
 
 
-class Image : public Object {
+/**
+ * Image class
+ */
+class DECLSPEC Image : public Object {
   SPLAT_OBJECT_DECL(Image);
 
 public:
+  /**
+   * Create an instance of this image on the image's canvas.
+   * 
+   * @param layer - Layer at which to render.
+   * @param position - Position at which to render.
+   * @param subimage - Pointer to SDL_Rect that specifies the 
+   *                 subimage to use in pixels.  If null, assume
+   *                 the full bounds of the image.
+   * 
+   * @return Instance* New instance handle.
+   */
   Instance *CreateInstance(Layer *Layer, int x, int y, SDL_Rect *subimage = nullptr);
 };
 
-class Layer : public Object {
+/**
+ * Layer class
+ */
+class DECLSPEC Layer : public Object {
   SPLAT_OBJECT_DECL(Layer);
 
 public:
-  void Move(Layer *other);
+  /**
+   * Move this layer above the given layer 
+   *  
+   * @param other - Layer 
+   *  
+   * @raises BadParameterException - If the other layer is invalid. 
+   * @raises WrongCanvasException - If the layer does belong to the same canvas as this layer.
+   */
+  void Move(Layer *other) throw (Exception);
 };
 
-class Canvas : public Object {
+/**
+ * Canvas class
+ */
+class DECLSPEC Canvas : public Object {
   SPLAT_OBJECT_DECL(Canvas);
 
 public:
+  Canvas(SDL_Window *window) throw(Exception);
+  ~Canvas();
+
   Image *CreateImage(SDL_Surface *surface);
   void DestroyImage(Image *image);
 
