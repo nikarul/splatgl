@@ -119,25 +119,137 @@ extern DECLSPEC int SDLCALL Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *oth
 /**
  * Create an instance of the given image in the given layer, at the given position.
  * 
- * subimage
+ * The instance can be only part of the image.  If subimage is 
+ * not NULL, it specifies the bounds of the image to display. 
+ *  
+ * Returns a pointer to the new Splat_Instance, or NULL if an 
+ * error occurs. 
  */
 extern DECLSPEC SDLCALL Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, SDL_Point *position, SDL_Rect *subimage);
+
+/**
+ * Destroys the specified image instance.
+ * 
+ * Returns 0 if successful, 1 otherwise. 
+ */
 extern DECLSPEC int SDLCALL Splat_DestroyInstance(Splat_Instance *instance);
+
+/**
+ * Update the position of the image instance.
+ * 
+ * Returns 0 if successful, 1 otherwise. 
+ */
 extern DECLSPEC int SDLCALL Splat_SetInstancePosition(Splat_Instance *instance, SDL_Point *position);
+
+/**
+ * Move the specified image instance to the specified layer.
+ * 
+ * Returns 0 if successful, 1 otherwise. 
+ */
 extern DECLSPEC int SDLCALL Splat_SetInstanceLayer(Splat_Instance *instance, SDL_Layer *layer);
+
+/**
+ * Update the image the instance refers. 
+ *  
+ * If subimage is not NULL, it specifies the bounds of the image 
+ * to display.  If image is NULL, only the subimage is updated. 
+ * If both are NULL, the instance is updated to the full size of 
+ * the image. 
+ * 
+ * Returns 0 if successful, 1 otherwise. 
+ */
 extern DECLSPEC int SDLCALL Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, SDL_Rect *subimage);
 
+/**
+ * Set the default background color. 
+ *  
+ * Returns 0 if successful, 1 otherwise. 
+ */
 extern DECLSPEC int SDLCALL Splat_SetClearColor(SDL_Color *color);
+
+/**
+ * Returns the renderer viewport origin, or NULL if an error 
+ * occurs. 
+ */
 extern DECLSPEC SDL SDLCALL_Point *Splat_GetViewPosition();
+
+/**
+ * Sets the renderer viewport origin. 
+ *  
+ * Returns 0 if successful, 1 otherwise. 
+ */
 extern DECLSPEC int SDLCALL Splat_SetViewPosition(SDL_Point *position);
-extern DECLSPEC int SDLCALL Splat_GetScale(float &x, float &y);
+
+/**
+ * Retrieves the scaling factors for the renderer. 
+ *  
+ * Returns 0 if sucessful, and the fields pointed to by x and y 
+ * are filled with the scaling factors.  Otherwise, the fields 
+ * are unmodified and returns 1. 
+ */
+extern DECLSPEC int SDLCALL Splat_GetScale(float *x, float *y);
+
+/**
+ * Set the scaling factors to the specified values. 
+ *  
+ * Returns 0 if successful, 1 otherwise. 
+ */
 extern DECLSPEC int SDLCALL Splat_SetScale(float x, float y);
+
+/**
+ * Render the scene. 
+ *  
+ * Returns 0 if successful, 1 otherwise. 
+ */
 extern DECLSPEC int SDLCALL Splat_Render();
 
+/**
+ * Draw a rectangle outline.  Intended primarily for debugging. 
+ * Draws above all normal layers. 
+ * 
+ * @param rect - Bounds of the rectangle.
+ * @param color - Color of rectangle.
+ * @param width - Width of the rectangle lines in pixels.
+ * @param ttl - Number of milliseconds to render the rectangle
+ * 
+ * @return 0 if successful, 1 otherwise.
+ */
 extern DECLSPEC int SDLCALL Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int ttl);
+
+/**
+ * Draw a filled rectangle.  Intended primarily for debugging. 
+ * Draws above all normal layers. 
+ * 
+ * @param rect - Bounds of the rectangle.
+ * @param color - Color of rectangle.
+ * @param ttl - Number of milliseconds to render the rectangle
+ * 
+ * @return 0 if successful, 1 otherwise.
+ */
 extern DECLSPEC int SDLCALL Splat_DrawSolidRect(SDL_Rect *rect, SDL_Color *color, int ttl);
+
+/**
+ * Draw a line.  Intended primarily for debugging. 
+ * Draws above all normal layers. 
+ * 
+ * @param start - Starting position of the line.
+ * @param end - Ending position of the line.
+ * @param color - Color of the line.
+ * @param width - Width of the line in pixels.
+ * @param ttl - Number of miliseconds.
+ * 
+ * @return 0 if successful, 1 otherwise.
+ */ 
 extern DECLSPEC void SDLCALL Splat_DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width, int ttl);
 
+/**
+ * Creates a new canvas to draw on. 
+ *  
+ * Most applications will create a single canvas, however, it is 
+ * possible to create multiple canvases and switch between them.
+ * 
+ * @return DECLSPEC SDLCALL Splat_Canvas* 
+ */
 extern DECLSPEC SDLCALL Splat_Canvas *Splat_CreateCanvas();
 extern DECLSPEC int SDLCALL Splat_DestroyCanvas(Splat_Canvas *context);
 extern DECLSPEC SDLCALL Splat_Canvas *Splat_GetActiveCanvas();
@@ -160,9 +272,35 @@ protected: \
   class D##name##; \
   unique_ptr<D##name##> d;
 
-void Prepare(SDL_Window *window);
+class Exception : public std::exception {};
+class BadParameterException : public exception {};
+class UninitializedException : public exception {};
+
+/**
+ *  Prepares Splat for rendering.
+ *  
+ *  @param window - An SDL window already created by the
+ *                application for Splat to use.
+ *  
+ *  @raises BadParameterException - If window is not a valid
+ *          SDL_Window pointer.
+ */
+void Prepare(SDL_Window *window) throws(Exception);
+
+/** 
+ *  Shuts down Splat and frees any unreleased resources.
+ *  
+ *  The application is responsible for cleaning up the SDL_Window
+ *  passed to Splat_Prepare after calling Splat_Finish.
+ *  
+ *  @raises UninitializedExceptions - If Splat is not properly
+ *          initialized by Splat::Prepare()
+ */ 
 void Finish();
 
+/**
+ * Base class for standard Splat classes
+ */
 class Object {
 protected:
   Object();
@@ -173,14 +311,43 @@ protected:
   operator= Object(const Object &o);
 };
 
-
+/**
+ * Image instance class
+ */
 class Instance : public Object {
   SPLAT_OBJECT_DECL(Instance);
 
 public:
-  void SetPosition(int x, int y);
-  void SetLayer(Layer *layer);
-  void SetImage(Image *image);
+  /**
+   * Set the position of the image instance. 
+   *  
+   * @param position - SDL_Point that specifies the new location 
+   *                 in canvas space.
+   *  
+   * @raises BadParameterException - Thrown if position is 
+   *         invalid.
+   */
+  void SetPosition(SDL_Point *position) throw (Exception);
+
+  /**
+   * Get the position of the image instance. 
+   *  
+   * @return - SDL_Point that specifies the new location 
+   *                 in canvas space.
+   */
+  SDL_Point GetPosition();
+
+  /**
+   * Set the layer for this instance.
+   * 
+   * @param layer - Layer to render this instance 
+   *  
+   * @raises BadParameterException - Thrown if position is 
+   *         invalid.
+   */
+  void SetLayer(Layer *layer) throw (Exception);
+  Layer *GetLayer() throw (Exception);
+  void SetImage(Image *image) throw (Exception);
 };
 
 
