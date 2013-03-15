@@ -19,6 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#ifndef __LIB_SPLAT_SRC_DIMAGE_H__
+#define __LIB_SPLAT_SRC_DIMAGE_H__
+
 #include "splat.h"
 #include "dobject.h"
 
@@ -27,14 +30,20 @@ namespace Splat {
 class SPLAT_LOCAL DImage : public DObject {
 public:
   GLuint texture;
-  Uint32 width;
-  Uint32 height;
-  Uint32 refs;
-  float s1;
-  float t1;
-  float s2;
-  float t2;
-  Uint8 atlas; /* True if this is an atlas image, false otherwise*/
-  Uint8 rotated; /* True if this is an atlas image and its rotated 90 degrees for packing, false otherwise */
+  uint32_t width;
+  uint32_t height;
+
+  forward_list<Instance> instances;
+
+
+  Instance *CreateInstance(Layer *Layer, int x, int y, SDL_Rect *subimage = nullptr);
+
+  void Update(SDL_Surface *surface);
+  int GetWidth();
+  int GetHeight();
+};
 
 }
+
+#endif // __LIB_SPLAT_SRC_DIMAGE_H__
+

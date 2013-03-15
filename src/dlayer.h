@@ -19,49 +19,21 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef __LIB_SPLAT_SRC_DCANVAS_H__
-#define __LIB_SPLAT_SRC_DCANVAS_H__
+#ifndef __LIB_SPLAT_SRC_DLAYER_H__
+#define __LIB_SPLAT_SRC_DLAYER_H__
 
 #include "splat.h"
 #include "dobject.h"
 
 namespace Splat {
 
-class SPLAT_LOCAL DCanvas : public DObject {
+class SPLAT_LOCAL DLayer : public DObject {
 public:
-  SDL_Window *window;
-
-  Color *clearColor;
-  list<Instance> instances;
-  SDL_Point viewPos;
-  float scale[2]; // Scale factors for X and Y
-  list<Image> images;
-  list<Rect> rects;
-  list<Line> lines;
-
-  DCanvas(SDL_Window *window);
-  ~DCanvas();
-
-  Image *CreateImage(SDL_Surface *surface);
-
-  Layer *CreateLayer();
-  void DestroyLayer(Layer *layer);
-
-  void SetClearColor(float r, float g, float b, float a);
-  const SDL_Point *GetViewPosition() const;
-  void SetViewPosition(const SDL_Point *point);
-
-  void GetScale(float &x, float &y);
-  void SetScale(float x, float y);
-
-  void Render();
-
-  void DrawRect(SDL_Rect *rect, SDL_Color *color, int width = 1, int ttl = 0);
-  void DrawSolidRect(SDL_Rect *rect, SDL_Color *color, int ttl = 0);
-  void DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width = 1, int ttl = 0);
+  const char *name;
+  float depth;
 };
 
 }
 
-#endif // __LIB_SPLAT_SRC_CANVAS_H__
+#endif // __LIB_SPLAT_SRC_DLAYER_H__
 

@@ -19,49 +19,44 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef __LIB_SPLAT_SRC_DCANVAS_H__
-#define __LIB_SPLAT_SRC_DCANVAS_H__
+#ifndef __LIB_SPLAT_SRC_DINSTANCE_H__
+#define __LIB_SPLAT_SRC_DINSTANCE_H__
 
 #include "splat.h"
 #include "dobject.h"
 
 namespace Splat {
 
-class SPLAT_LOCAL DCanvas : public DObject {
+class SPLAT_LOCAL DInstance : public DObject {
 public:
-  SDL_Window *window;
+  GLuint texture;
+  SDL_Rect rect;
+  float s1;
+  float t1;
+  float s2;
+  float t2;
+  float depth;
+  float angle; /* Rotation angle to apply when renderering this image */
+  float scale[2];
+  Color color; /* Color to use when renderering the image. */
+  uint8_t flags;
+  SDL_Rect clip; /* FL_CLIPPED is set, the image is clipped to this rect */
 
-  Color *clearColor;
-  list<Instance> instances;
-  SDL_Point viewPos;
-  float scale[2]; // Scale factors for X and Y
-  list<Image> images;
-  list<Rect> rects;
-  list<Line> lines;
+  GetOrigin()
+  SetExtents()
+  GetRect()
+  GetClipRect()
+  SetClipRect()
+  SetColor()
+  SetAngle()
+  GetScale()
+  SetScale()
 
-  DCanvas(SDL_Window *window);
-  ~DCanvas();
-
-  Image *CreateImage(SDL_Surface *surface);
-
-  Layer *CreateLayer();
-  void DestroyLayer(Layer *layer);
-
-  void SetClearColor(float r, float g, float b, float a);
-  const SDL_Point *GetViewPosition() const;
-  void SetViewPosition(const SDL_Point *point);
-
-  void GetScale(float &x, float &y);
-  void SetScale(float x, float y);
-
-  void Render();
-
-  void DrawRect(SDL_Rect *rect, SDL_Color *color, int width = 1, int ttl = 0);
-  void DrawSolidRect(SDL_Rect *rect, SDL_Color *color, int ttl = 0);
-  void DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width = 1, int ttl = 0);
+  GetVisible()
+  SetVisible()
 };
 
 }
 
-#endif // __LIB_SPLAT_SRC_CANVAS_H__
+#endif // __LIB_SPLAT_SRC_DINSTANCE_H__
 

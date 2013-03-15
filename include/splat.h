@@ -102,6 +102,19 @@ public:
    */
   SDL_Point GetPosition();
 
+  GetOrigin()
+  SetExtents()
+  GetRect()
+  GetClipRect()
+  SetClipRect()
+  SetColor()
+  SetAngle()
+  GetScale()
+  SetScale()
+
+  GetVisible()
+  SetVisible()
+
   /**
    * Set the layer for this instance.
    * 
