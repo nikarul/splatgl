@@ -19,6 +19,15 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#ifndef __LIB_SPLAT_H__
+#define __LIB_SPLAT_H__
+
+#include <exception>
+#include <memory>
+
+struct SDL_Point;
+struct SDL_Rect;
+
 /**
  * @file splat.h 
  *  
@@ -36,234 +45,9 @@
  *  
  *  Splat is written in C++, but provides a C API as well.
  *  
- *  This library is distributed under Zlib License, found in the file "COPYING".
+ *  This library is distributed under Zlib License, found in the file "LICENSE".
  *  
  */
-
-#include <SDL2/begin_code.h>
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/**
- *  Prepares Splat for rendering.
- *  
- *  The window argument is an SDL window already created by the
- *  application for Splat to use.
- *  
- *  Returns 0 if successful, 1 otherwise.
- */
-extern DECLSPEC int SDLCALL Splat_Prepare(SDL_Window *window);
-
-/** 
- *  Shuts down Splat and frees any unreleased resources.
- *  
- *  The application is responsible for cleaning up the SDL_Window
- *  passed to Splat_Prepare after calling Splat_Finish.
- *  
- *  Returns 0 if successful, 1 otherwise.
- */ 
-extern DECLSPEC int SDLCALL Splat_Finish();
-
-/**
- * Creates a Splat image from the given SDL_Surface. 
- *  
- * The application may free the SDL_Surface after the call returns. 
- *  
- * Returns a pointer to a Splat_Image if successful, NULL otherwise.
- */
-extern DECLSPEC SDLCALL Splat_Image *Splat_CreateImage(SDL_Surface *surface);
-
-/**
- * Destroys a Splat image previously created. 
- *  
- * This will invalidate any active Splat_Instance objects that still 
- * reference this image.  Those instances must still be destroyed to 
- * free the other resources associated with them.
- *  
- *  Returns 0 if successful, 1 otherwise.
- */
-extern DECLSPEC int SDLCALL Splat_DestroyImage(Splat_Image *image);
-
-/**
- * Create a Splat Layer. 
- *  
- * Splat organizes instances of images into overlapping layers.  The 
- * application must create at least one layer to place any image instances. 
- * The new layer will be placed at the top of the stack of layers, but 
- * this can be rearranged with Splat_MoveLayer(). 
- *  
- * Returns a pointer to a new Splat_Layer if successfull, NULL otherwise.
- */
-extern DECLSPEC SDLCALL Splat_Layer *Splat_CreateLayer();
-
-/**
- * Destroys a Splat Layer and any associated resources. 
- *  
- * Returns 0 if successful, 1 otherwise. 
- */
-extern DECLSPEC int SDLCALL Splat_DestroyLayer(Splat_Layer *layer);
-
-/**
- * Rearranges Splat layer stack. 
- *  
- * Calling this will place 'layer' above 'other' in the layer stack. 
- * If 'layer' is already directly above 'other', the call will succeed 
- * but the stack will remain unchanged. 
- *  
- * Returns 0 if successful, 1 otherwise. 
- */
-extern DECLSPEC int SDLCALL Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other);
-
-/**
- * Create an instance of the given image in the given layer, at the given position.
- * 
- * The instance can be only part of the image.  If subimage is 
- * not NULL, it specifies the bounds of the image to display. 
- *  
- * Returns a pointer to the new Splat_Instance, or NULL if an 
- * error occurs. 
- */
-extern DECLSPEC SDLCALL Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, SDL_Point *position, SDL_Rect *subimage);
-
-/**
- * Destroys the specified image instance.
- * 
- * Returns 0 if successful, 1 otherwise. 
- */
-extern DECLSPEC int SDLCALL Splat_DestroyInstance(Splat_Instance *instance);
-
-/**
- * Update the position of the image instance.
- * 
- * Returns 0 if successful, 1 otherwise. 
- */
-extern DECLSPEC int SDLCALL Splat_SetInstancePosition(Splat_Instance *instance, SDL_Point *position);
-
-/**
- * Move the specified image instance to the specified layer.
- * 
- * Returns 0 if successful, 1 otherwise. 
- */
-extern DECLSPEC int SDLCALL Splat_SetInstanceLayer(Splat_Instance *instance, SDL_Layer *layer);
-
-/**
- * Update the image the instance refers. 
- *  
- * If subimage is not NULL, it specifies the bounds of the image 
- * to display.  If image is NULL, only the subimage is updated. 
- * If both are NULL, the instance is updated to the full size of 
- * the image. 
- * 
- * Returns 0 if successful, 1 otherwise. 
- */
-extern DECLSPEC int SDLCALL Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, SDL_Rect *subimage);
-
-/**
- * Set the default background color. 
- *  
- * Returns 0 if successful, 1 otherwise. 
- */
-extern DECLSPEC int SDLCALL Splat_SetClearColor(SDL_Color *color);
-
-/**
- * Returns the renderer viewport origin, or NULL if an error 
- * occurs. 
- */
-extern DECLSPEC SDL SDLCALL_Point *Splat_GetViewPosition();
-
-/**
- * Sets the renderer viewport origin. 
- *  
- * Returns 0 if successful, 1 otherwise. 
- */
-extern DECLSPEC int SDLCALL Splat_SetViewPosition(SDL_Point *position);
-
-/**
- * Retrieves the scaling factors for the renderer. 
- *  
- * Returns 0 if sucessful, and the fields pointed to by x and y 
- * are filled with the scaling factors.  Otherwise, the fields 
- * are unmodified and returns 1. 
- */
-extern DECLSPEC int SDLCALL Splat_GetScale(float *x, float *y);
-
-/**
- * Set the scaling factors to the specified values. 
- *  
- * Returns 0 if successful, 1 otherwise. 
- */
-extern DECLSPEC int SDLCALL Splat_SetScale(float x, float y);
-
-/**
- * Render the scene. 
- *  
- * Returns 0 if successful, 1 otherwise. 
- */
-extern DECLSPEC int SDLCALL Splat_Render();
-
-/**
- * Draw a rectangle outline.  Intended primarily for debugging. 
- * Draws above all normal layers. 
- * 
- * @param rect - Bounds of the rectangle.
- * @param color - Color of rectangle.
- * @param width - Width of the rectangle lines in pixels.
- * @param ttl - Number of milliseconds to render the rectangle
- * 
- * @return 0 if successful, 1 otherwise.
- */
-extern DECLSPEC int SDLCALL Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int ttl);
-
-/**
- * Draw a filled rectangle.  Intended primarily for debugging. 
- * Draws above all normal layers. 
- * 
- * @param rect - Bounds of the rectangle.
- * @param color - Color of rectangle.
- * @param ttl - Number of milliseconds to render the rectangle
- * 
- * @return 0 if successful, 1 otherwise.
- */
-extern DECLSPEC int SDLCALL Splat_DrawSolidRect(SDL_Rect *rect, SDL_Color *color, int ttl);
-
-/**
- * Draw a line.  Intended primarily for debugging. 
- * Draws above all normal layers. 
- * 
- * @param start - Starting position of the line.
- * @param end - Ending position of the line.
- * @param color - Color of the line.
- * @param width - Width of the line in pixels.
- * @param ttl - Number of miliseconds.
- * 
- * @return 0 if successful, 1 otherwise.
- */ 
-extern DECLSPEC void SDLCALL Splat_DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width, int ttl);
-
-/**
- * Creates a new canvas to draw on. 
- *  
- * Most applications will create a single canvas, however, it is 
- * possible to create multiple canvases and switch between them.
- * 
- * @return DECLSPEC SDLCALL Splat_Canvas* 
- */
-extern DECLSPEC SDLCALL Splat_Canvas *Splat_CreateCanvas();
-extern DECLSPEC int SDLCALL Splat_DestroyCanvas(Splat_Canvas *context);
-extern DECLSPEC SDLCALL Splat_Canvas *Splat_GetActiveCanvas();
-extern DECLSPEC int SDLCALL Splat_SetActiveCanvas(Splat_Canvas *context);
-
-extern DECLSPEC int SDLCALL Splat_LoadVertexShader(const char *source);
-extern DECLSPEC int SDLCALL Splat_LoadFragmentShader(const char *source);
-extern DECLSPEC int SDLCALL Splat_PrepareShaders();
-extern DECLSPEC int SDLCALL Splat_FinishShaders();
-
-extern DECLSPEC int SDLCALL Splat_GetError();
-
-#ifdef __cplusplus
-}
 
 namespace Splat {
 
@@ -272,38 +56,18 @@ protected: \
   class D##name##; \
   unique_ptr<D##name##> d;
 
-class DECLSPEC Exception : public std::exception {};
-class DECLSPEC BadParameterException : public Exception {};
-class DECLSPEC UninitializedException : public Exception {};
-class DECLSPEC WrongCanvasException : public Exception {};
-
-/**
- *  Prepares Splat for rendering.
- *  
- *  @param window - An SDL window already created by the
- *                application for Splat to use.
- *  
- *  @raises BadParameterException - If window is not a valid
- *          SDL_Window pointer.
- */
-DECLSPEC void Prepare(SDL_Window *window) throws(Exception);
-
-/** 
- *  Shuts down Splat and frees any unreleased resources.
- *  
- *  The application is responsible for cleaning up the SDL_Window
- *  passed to Splat_Prepare after calling Splat_Finish.
- *  
- *  @raises UninitializedExceptions - If Splat is not properly
- *          initialized by Splat::Prepare()
- */ 
-DECLSPEC void Finish();
+class SPLAT_PUBLIC Exception : public std::exception {};
+class SPLAT_PUBLIC BadParameterException : public Exception {};
+class SPLAT_PUBLIC WrongCanvasException : public Exception {};
+class SPLAT_PUBLIC DriverException : public Exception {};
 
 /**
  * Base class for standard Splat classes
  */
-class DECLSPEC Object {
+class SPLAT_PUBLIC Object {
 protected:
+  friend class DObject;
+
   Object();
   ~Object();
 
@@ -315,7 +79,7 @@ protected:
 /**
  * Image instance class
  */
-class DECLSPEC Instance : public Object {
+class SPLAT_PUBLIC Instance : public Object {
   SPLAT_OBJECT_DECL(Instance);
 
 public:
@@ -328,7 +92,7 @@ public:
    * @raises BadParameterException - Thrown if position is 
    *         invalid.
    */
-  void SetPosition(SDL_Point *position) throw (Exception);
+  void SetPosition(SDL_Point *position);
 
   /**
    * Get the position of the image instance. 
@@ -348,7 +112,7 @@ public:
    * @raises WrongCanvasException - If the layer does belong to 
    *         the same canvas as this instance.
    */
-  void SetLayer(Layer *layer) throw (Exception);
+  void SetLayer(Layer *layer);
 
   /**
    * Get the layer for this instance.
@@ -377,14 +141,14 @@ public:
    * @raises WrongCanvasException - If the image does belong to 
    *         the same canvas as this instance.
    */
-  void SetImage(Image *image, SDL_Rect *subimage = nullptr) throw (Exception);
+  void SetImage(Image *image, SDL_Rect *subimage = nullptr);
 };
 
 
 /**
  * Image class
  */
-class DECLSPEC Image : public Object {
+class SPLAT_PUBLIC Image : public Object {
   SPLAT_OBJECT_DECL(Image);
 
 public:
@@ -400,12 +164,16 @@ public:
    * @return Instance* New instance handle.
    */
   Instance *CreateInstance(Layer *Layer, int x, int y, SDL_Rect *subimage = nullptr);
+
+  void Update(SDL_Surface *surface);
+  int GetWidth();
+  int GetHeight();
 };
 
 /**
  * Layer class
  */
-class DECLSPEC Layer : public Object {
+class SPLAT_PUBLIC Layer : public Object {
   SPLAT_OBJECT_DECL(Layer);
 
 public:
@@ -417,17 +185,37 @@ public:
    * @raises BadParameterException - If the other layer is invalid. 
    * @raises WrongCanvasException - If the layer does belong to the same canvas as this layer.
    */
-  void Move(Layer *other) throw (Exception);
+  void Move(Layer *other);
 };
 
 /**
  * Canvas class
  */
-class DECLSPEC Canvas : public Object {
+class SPLAT_PUBLIC Canvas : public Object {
   SPLAT_OBJECT_DECL(Canvas);
 
 public:
-  Canvas(SDL_Window *window) throw(Exception);
+  /**
+   * Construct a Canvas object.
+   *  
+   * Multiple canvases can point to the same window to allow switching 
+   * between scenes or contexts.  Note that it only makes sense to render 
+   * one canvas at a time. 
+   *  
+   * You can also render to multiple windows simultaneously from different 
+   * canvases, if the underlying driver implementation supports that. 
+   *  
+   * @param window - Points to an SDL Window initialized as desired for the canvas to use. 
+   *  
+   * @raise BadParameterException - If the window is invalid. 
+   * @raise DriverException - If an driver error occurs. 
+   */
+  Canvas(SDL_Window *window);
+
+  /**
+   * Canvas Destructor.  Cleans up the OpenGL set up.  It is the application's 
+   * responsibility to destroy the SDL window and clean up SDL afterwards.
+   */
   ~Canvas();
 
   Image *CreateImage(SDL_Surface *surface);
@@ -452,7 +240,5 @@ public:
 
 }
 
-#endif /* __cplusplus */
-
-#include <SDL2/close_code.h>
+#endif // #ifndef __LIB_SPLAT_H__
 
