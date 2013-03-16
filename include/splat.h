@@ -22,11 +22,11 @@
 #ifndef __LIB_SPLAT_H__
 #define __LIB_SPLAT_H__
 
+#include <array>
+#include <cstdint>
 #include <exception>
 #include <memory>
-
-struct SDL_Point;
-struct SDL_Rect;
+#include <SDL.h>
 
 /**
  * @file splat.h 
@@ -53,8 +53,12 @@ namespace Splat {
 
 #define SPLAT_OBJECT_DECL(name) \
 protected: \
-  class D##name##; \
-  unique_ptr<D##name##> d;
+  class D##name; \
+  std::unique_ptr<D##name> d;
+
+#define SPLAT_PUBLIC
+#define SPLAT_LOCAL
+#define SPLAT_INLINE
 
 class SPLAT_PUBLIC Exception : public std::exception {};
 class SPLAT_PUBLIC BadParameterException : public Exception {};
@@ -73,7 +77,52 @@ protected:
 
   // Prevent copying
   Object(const Object &o);
-  operator= Object(const Object &o);
+  Object &operator=(const Object &o);
+};
+
+/**
+ * Layer class
+ */
+class SPLAT_PUBLIC Layer : public Object {
+  SPLAT_OBJECT_DECL(Layer);
+
+public:
+  /**
+   * Move this layer above the given layer 
+   *  
+   * @param other - Layer 
+   *  
+   * @raises BadParameterException - If the other layer is invalid. 
+   * @raises WrongCanvasException - If the layer does belong to the same canvas as this layer.
+   */
+  void Move(Layer *other);
+};
+
+class Instance;
+
+/**
+ * Image class
+ */
+class SPLAT_PUBLIC Image : public Object {
+  SPLAT_OBJECT_DECL(Image);
+
+public:
+  /**
+   * Create an instance of this image on the image's canvas.
+   * 
+   * @param layer - Layer at which to render.
+   * @param position - Position at which to render.
+   * @param subimage - Pointer to SDL_Rect that specifies the 
+   *                 subimage to use in pixels.  If null, assume
+   *                 the full bounds of the image.
+   * 
+   * @return Instance* New instance handle.
+   */
+  Instance *CreateInstance(Layer *Layer, int x, int y, SDL_Rect *subimage = nullptr);
+
+  void Update(SDL_Surface *surface);
+  int GetWidth();
+  int GetHeight();
 };
 
 /**
@@ -102,21 +151,21 @@ public:
    */
   SDL_Point GetPosition();
 
-  GetOrigin()
-  SetExtents()
-  GetRect()
-  GetClipRect()
-  SetClipRect()
-  SetColor()
-  SetAngle()
-  GetScale()
-  SetScale()
+//GetOrigin()
+//SetExtents()
+//GetRect()
+//GetClipRect()
+//SetClipRect()
+//SetColor()
+//SetAngle()
+//GetScale()
+//SetScale()
 
   bool IsFixed();
   void SetFixed(bool fixed);
 
-  IsVisible()
-  SetVisible()
+//IsVisible()
+//SetVisible()
 
   /**
    * Set the layer for this instance.
@@ -160,52 +209,9 @@ public:
   void SetImage(Image *image, SDL_Rect *subimage = nullptr);
 };
 
-
-/**
- * Image class
- */
-class SPLAT_PUBLIC Image : public Object {
-  SPLAT_OBJECT_DECL(Image);
-
-public:
-  /**
-   * Create an instance of this image on the image's canvas.
-   * 
-   * @param layer - Layer at which to render.
-   * @param position - Position at which to render.
-   * @param subimage - Pointer to SDL_Rect that specifies the 
-   *                 subimage to use in pixels.  If null, assume
-   *                 the full bounds of the image.
-   * 
-   * @return Instance* New instance handle.
-   */
-  Instance *CreateInstance(Layer *Layer, int x, int y, SDL_Rect *subimage = nullptr);
-
-  void Update(SDL_Surface *surface);
-  int GetWidth();
-  int GetHeight();
-};
-
-/**
- * Layer class
- */
-class SPLAT_PUBLIC Layer : public Object {
-  SPLAT_OBJECT_DECL(Layer);
-
-public:
-  /**
-   * Move this layer above the given layer 
-   *  
-   * @param other - Layer 
-   *  
-   * @raises BadParameterException - If the other layer is invalid. 
-   * @raises WrongCanvasException - If the layer does belong to the same canvas as this layer.
-   */
-  void Move(Layer *other);
-};
-
 typedef std::array<float, 2> scale_t;
 typedef std::array<uint32_t, 2> extents_t;
+typedef std::array<float, 4> color_t;
 
 /**
  * Canvas class

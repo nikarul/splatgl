@@ -22,6 +22,7 @@
 #ifndef __LIB_SPLAT_SRC_DCANVAS_H__
 #define __LIB_SPLAT_SRC_DCANVAS_H__
 
+#include <forward_list>
 #include "splat.h"
 #include "dobject.h"
 
@@ -34,7 +35,7 @@ struct DebugLine {
   int width;
   int32_t expire;
   bool relative;
-}
+};
 
 struct DebugRect {
   SDL_Rect rect;
@@ -42,13 +43,13 @@ struct DebugRect {
   int32_t expire;
   bool filled;
   bool relative;
-}
+};
 
 class SPLAT_LOCAL DCanvas : public DObject {
 public:
   SDL_Window *window;
 
-  Color *clearColor;
+  color_t clearColor;
   SDL_Point viewPos;
   scale_t scale; // Scale factors for X and Y
   forward_list<Image> images;
