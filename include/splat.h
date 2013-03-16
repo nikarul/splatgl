@@ -112,7 +112,10 @@ public:
   GetScale()
   SetScale()
 
-  GetVisible()
+  bool IsFixed();
+  void SetFixed(bool fixed);
+
+  IsVisible()
   SetVisible()
 
   /**
@@ -201,6 +204,9 @@ public:
   void Move(Layer *other);
 };
 
+typedef std::array<float, 2> scale_t;
+typedef std::array<uint32_t, 2> extents_t;
+
 /**
  * Canvas class
  */
@@ -237,18 +243,18 @@ public:
   Layer *CreateLayer();
   void DestroyLayer(Layer *layer);
 
-  void SetClearColor(SDL_Color *color);
-  SDL_Point *GetViewPosition();
-  SDL_Point *GetViewPosition();
+  void SetClearColor(color_t &color);
+
+  SDL_Point GetViewPosition();
+  void SetViewPosition(int x, int y);
   
-  void GetScale(float &x, float &y);
-  void SetScale(float x, float y);
+  scale_t GetViewScale();
+  void SetViewScale(float x, float y);
 
   void Render();
 
-  void DrawRect(SDL_Rect *rect, SDL_Color *color, int width = 1, int ttl = 0);
-  void DrawSolidRect(SDL_Rect *rect, SDL_Color *color, int ttl = 0);
-  void DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width = 1, int ttl = 0);
+  void DrawRect(SDL_Rect *rect, SDL_Color *color, int width = 1, int ttl = 0, bool filled = false, bool relative = true);
+  void DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width = 1, int ttl = 0, bool relative = true);
 };
 
 }

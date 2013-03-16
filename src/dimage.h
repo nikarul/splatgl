@@ -30,17 +30,15 @@ namespace Splat {
 class SPLAT_LOCAL DImage : public DObject {
 public:
   GLuint texture;
-  uint32_t width;
-  uint32_t height;
+  extents_t extents;
 
-  forward_list<Instance> instances;
+  std::forward_list<Instance> instances;
 
 
   Instance *CreateInstance(Layer *Layer, int x, int y, SDL_Rect *subimage = nullptr);
 
   void Update(SDL_Surface *surface);
-  int GetWidth();
-  int GetHeight();
+  extents_t GetExtents() const;
 };
 
 }

@@ -211,7 +211,7 @@ extern DECLSPEC int SDLCALL Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int
  * 
  * @return 0 if successful, 1 otherwise.
  */
-extern DECLSPEC int SDLCALL Splat_DrawSolidRect(SDL_Rect *rect, SDL_Color *color, int ttl);
+extern DECLSPEC int SDLCALL Splat_DrawFilledRect(SDL_Rect *rect, SDL_Color *color, int ttl);
 
 /**
  * Draw a line.  Intended primarily for debugging. 

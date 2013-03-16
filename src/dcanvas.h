@@ -27,39 +27,87 @@
 
 namespace Splat {
 
+struct DebugLine {
+  SDL_Point start;
+  SDL_Point end;
+  color_t color;
+  int width;
+  int32_t expire;
+  bool relative;
+}
+
+struct DebugRect {
+  SDL_Rect rect;
+  color_t color;
+  int32_t expire;
+  bool filled;
+  bool relative;
+}
+
 class SPLAT_LOCAL DCanvas : public DObject {
 public:
   SDL_Window *window;
 
   Color *clearColor;
-  list<Instance> instances;
   SDL_Point viewPos;
-  float scale[2]; // Scale factors for X and Y
-  list<Image> images;
-  list<Rect> rects;
-  list<Line> lines;
+  scale_t scale; // Scale factors for X and Y
+  forward_list<Image> images;
+  forward_list<Rect> rects;
+  forward_list<Line> lines;
+
+  array<float, 18> vertex_buffer;
+  array<float, 12> texcoord_buffer
 
   DCanvas(SDL_Window *window);
   ~DCanvas();
 
-  Image *CreateImage(SDL_Surface *surface);
+  SPLAT_INLINE Image *CreateImage(SDL_Surface *surface);
+  SPLAT_INLINE void DestroyImage(Image *image);
 
-  Layer *CreateLayer();
-  void DestroyLayer(Layer *layer);
+  SPLAT_INLINE Layer *CreateLayer();
+  SPLAT_INLINE void DestroyLayer(Layer *layer);
 
-  void SetClearColor(float r, float g, float b, float a);
-  const SDL_Point *GetViewPosition() const;
-  void SetViewPosition(const SDL_Point *point);
+  SPLAT_INLINE void SetClearColor(const color_t &color);
 
-  void GetScale(float &x, float &y);
-  void SetScale(float x, float y);
+  SPLAT_INLINE const SDL_Point &GetViewPosition() const { return viewPos; }
+  SPLAT_INLINE void SetViewPosition(int x, int y);
+
+  SPLAT_INLINE const scale_t &GetViewScale(const float &x, const float &y) const { return scale; }
+  SPLAT_INLINE void SetViewScale(float x, float y);
 
   void Render();
 
-  void DrawRect(SDL_Rect *rect, SDL_Color *color, int width = 1, int ttl = 0);
-  void DrawSolidRect(SDL_Rect *rect, SDL_Color *color, int ttl = 0);
-  void DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width = 1, int ttl = 0);
+  void DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int ttl, bool filled, bool relative);
+  void DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width, int ttl, bool relative);
 };
+
+Image *DCanvas::CreateImage(SDL_Surface *surface) {
+  images.emplace_back(this, surface);
+  return &images.back();
+}
+
+Layer *DCanvas::CreateLayer() {
+  layers.emplace_back(this);
+  return &layers.back();
+}
+
+void DCanvas::DestroyLayer(Layer *layer) {
+  layers.remove_if(bool [=](Layer& candidate) { return candidate.d == layer->d; })
+}
+
+void DCanvas::SetColor(const color_t &color) {
+  glClearColor(color[0], color[1], color[2], color[3]);
+}
+
+void DCanvas::SetViewPosition(SDL_Point *position) {
+  viewPos.x = position->x;
+  viewPos.y = position->y;
+}
+
+void DCanvas::SetScale(float x, float y) {
+  scale[0] = x;
+  scale[1] = y;
+}
 
 }
 

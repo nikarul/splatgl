@@ -23,6 +23,13 @@
 
 namespace Splat {
 
+class SPLAT_LOCAL OpenGLException : public DriverException {
+public:
+  GLenum error;
+
+  OpenGLException(GLenum e) : error(e) {}
+};
+
 DCanvas::DCanvas(SDL_Window *window) : window(window) {
   window_glcontext = SDL_GL_CreateContext(window);
   if (!window_glcontext) {
@@ -62,44 +69,303 @@ DCanvas::~DCanvas() {
   window_glcontext = nullptr;
 }
 
-Image *DCanvas::CreateImage(SDL_Surface *surface) {
-  images.emplace_back(this, surface);
-  return &images.back();
-}
-
-Layer *DCanvas::CreateLayer() {
-  layers.emplace_back(this);
-  return &layers.back();
-}
-
-void DCanvas::DestroyLayer(Layer *layer) {
-  layers.remove_if(bool [=](Layer& candidate) { return candidate.d == layer->d; })
-}
-
-void DCanvas::SetColor(float r, float g, float b, float a) {
-  glClearColor(color.r, color.g, color.b, color.a);
-}
-
-const SDL_Point *DCanvas::GetViewPosition() {
-  return &viewPos;
-}
-
-void DCanvas::SetViewPosition(SDL_Point *position) {
-  viewPos.x = position->x;
-  viewPos.y = position->y;
-}
-
-void DCanvas::GetScale(const float &x, const float &y) {
-  x = scale_x;
-  y = scale_y;
-}
-
-void DCanvas::SetScale(float x, float y) {
-  scale_x = x;
-  scale_y = y;
-}
-
 void DCanvas::Render() {
+  int winWidth, winHeight;
+  SDL_GetWindowSize(window, &winWidth, &winHeight);
+
+  // Clear the color and depth buffers.
+  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_DEPTH_BUFFER_BIT);
+
+  // Enable textures
+  glEnable(GL_TEXTURE_2D);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+  // Save the current matrix
+  glPushMatrix();
+
+  // Scale as necessary
+  glScalef(scale[0], scale[1], 1.0f);
+
+  // Specify vertex and tex coord buffers
+  glVertexPointer(3, GL_FLOAT, 0, vertex_buffer.const_pointer());
+  glEnableClientState(GL_VERTEX_ARRAY);
+  glTexCoordPointer(2, GL_FLOAT, 0, texcoord_buffer.const_pointer());
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+  for (auto image : images) {
+    const DImage &dimage(*image->d);
+
+    // Bind our texture
+    glBindTexture(GL_TEXTURE_2D, d.texture);
+
+    for (auto instance : dimage.instances) {
+      const DInstance &dinst(*instance->d);
+
+      // Save the current matrix
+      glPushMatrix();
+
+      // Translate to the images current location
+      if (dinst.flags & FL_RELATIVE) {
+        // Translate relative to the current view position
+        glTranslatef(dinst.rect.x - viewPos[0], dinst.rect.y - viewPos[1], 0.0f);
+      } else {
+        glTranslatef(dinst.rect.x, dinst.rect.y, 0.0f);
+      }
+      // Set color for rendering
+      glColor4f(dinst.color[0], dinst.color[1], dinst.color[2], dinst.color[3]);
+
+      scaled_rect = dinst.GetScaledRect();
+
+      // Handle rotation
+      if (dinst.flags & MASK_IMAGEMOD) {
+        const float w2 = ((float) scaled_rect.w) * 0.5f;
+        const float h2 = ((float) scaled_rect.h) * 0.5f;
+
+        glTranslatef(w2, h2, 0.0f);
+
+        if (handle->flags & FL_ROTATE_ANGLE) { glRotatef(dinst.angle, 0.0f, 0.0f, 1.0f); }
+
+        array<float, 16> matrix = { 
+          1.0f, 0.0f, 0.0f, 0.0f, // COLUMN 1
+          0.0f, 1.0f, 0.0f, 0.0f, // COLUMN 2
+          0.0f, 0.0f, 1.0f, 0.0f, // COLUMN 3
+          0.0f, 0.0f, 0.0f, 1.0f, // COLUMN 4
+        };
+
+        if (handle->flags & FL_MIRROR_X) { matrix[0] = -1.0f; }
+        if (handle->flags & FL_MIRROR_Y) { matrix[5] = -1.0f; }
+        if (handle->flags & FL_ANTIDIAG) {
+          matrix[4] = matrix[0];
+          matrix[1] = matrix[5];
+          matrix[0] = 0.0f;
+          matrix[5] = 0.0f;
+        }
+
+        glMultMatrix(matrix.const_pointer());
+
+        glTranslatef(-w2, -h2, 0.0f);
+      }
+
+      // Handle scissoring
+      if (dinst.flags & FL_CLIP) {
+        SDL_Rect &clip = dinst.GetClipRect();
+
+        // Enable scissoring
+        glEnable(GL_SCISSOR_TEST);
+
+        // Snip, snip, snip...
+        glScissor(clip.x, winHeight - (clip.y + clip->clip.h), clip.w, clip.h);
+      } else {
+        // Disable scissoring
+        glDisable(GL_SCISSOR_TEST);
+      }
+
+      // Generate buffers for rendering
+
+      // First triangle
+      //glTexCoord2f(handle->s1, handle->t2);
+      texcoord_buffer[0] = handle->s1;
+      texcoord_buffer[1] = handle->t2;
+      //glVertex3f(0.0f, scaled_rect.h, handle->depth);
+      vertex_buffer[0] = 0.0f;
+      vertex_buffer[1] = scaled_rect.h;
+      vertex_buffer[2] = handle->depth;
+
+      //glTexCoord2f(handle->s1, handle->t1);
+      texcoord_buffer[2] = handle->s1;
+      texcoord_buffer[3] = handle->t1;
+      //glVertex3f(0.0f, 0.0f, handle->depth);
+      vertex_buffer[3] = 0.0f;
+      vertex_buffer[4] = 0.0f;
+      vertex_buffer[5] = handle->depth;
+
+      //glTexCoord2f(handle->s2, handle->t1);
+      texcoord_buffer[4] = handle->s2;
+      texcoord_buffer[5] = handle->t1;
+      //glVertex3f(scaled_rect.w, 0.0f, handle->depth);
+      vertex_buffer[6] = scaled_rect.w;
+      vertex_buffer[7] = 0.0f;
+      vertex_buffer[8] = handle->depth;
+
+      // Second triangle
+      //glTexCoord2f(handle->s2, handle->t2);
+      texcoord_buffer[6] = handle->s2;
+      texcoord_buffer[7] = handle->t2;
+      //glVertex3f(scaled_rect.w, scaled_rect.h, handle->depth);
+      vertex_buffer[9] = scaled_rect.w;
+      vertex_buffer[10] = scaled_rect.h;
+      vertex_buffer[11] = handle->depth;
+
+      //glTexCoord2f(handle->s1, handle->t2);
+      texcoord_buffer[8] = handle->s1;
+      texcoord_buffer[9] = handle->t2;
+      //glVertex3f(0.0f, scaled_rect.h, handle->depth);
+      vertex_buffer[12] = 0.0f;
+      vertex_buffer[13] = scaled_rect.h;
+      vertex_buffer[14] = handle->depth;
+
+      //glTexCoord2f(handle->s2, handle->t1);
+      texcoord_buffer[10] = handle->s2;
+      texcoord_buffer[11] = handle->t1;
+      //glVertex3f(scaled_rect.w, 0.0f, handle->depth);
+      vertex_buffer[15] = scaled_rect.w;
+      vertex_buffer[16] = 0.0f;
+      vertex_buffer[17] = handle->depth;
+    }
+
+    // Finished with our triangles
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    // Finished with our triangles
+    glPopMatrix();
+  }
+
+  // Disable scissoring
+  glDisable(GL_SCISSOR_TEST);
+
+  const uint32_t time = SDL_GetTicks();
+
+  // Draw rects
+  if (!rects.empty())
+  {
+    glDisable(GL_TEXTURE_2D);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glVertexPointer(2, GL_FLOAT, 0, &vertex_buffer);
+
+    for (auto r = rects.begin(); r != rects.end(); /**/) {
+      const DebugRect &rect(*r);
+
+      if (time > rect.expire) {
+        r = rects.erase(r);
+        continue;
+      }
+
+      glColor4f(rect.color[0], rect.color[1], rect.color[2], rect.color[3]);
+
+      // Save the current matrix
+      glPushMatrix();
+
+      if (!rect.relative) {
+        // Translate to the render context's current location
+        glTranslatef(-context->origin[0], -context->origin[1], 0.0f);
+      }
+
+      glLineWidth(rect.width);
+
+      // Prepare to render rects
+      if (rect.fill) {
+        // First triangle
+        vertex_buffer[0] = rect.x;
+        vertex_buffer[1] = rect.y;
+
+        vertex_buffer[2] = rect.x + rect.w;
+        vertex_buffer[3] = rect.y;
+
+        vertex_buffer[4] = rect.x;
+        vertex_buffer[5] = rect.y + rect.h;
+
+        // Second triangle
+        vertex_buffer[6] = rect.x + rect.w;
+        vertex_buffer[7] = rect.y + rect.h;
+
+        vertex_buffer[8] = rect.y;
+        vertex_buffer[9] = rect.y + rect.h;
+
+        vertex_buffer[10] = rect.x + rect.w;
+        vertex_buffer[11] = rect.x;
+
+        // Finished with our triangles
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+      } else {
+        vertex_buffer[0] = rect.x;
+        vertex_buffer[1] = rect.y;
+
+        vertex_buffer[2] = rect.x + rect.w;
+        vertex_buffer[3] = rect.y;
+
+        vertex_buffer[4] = rect.x + rect.w;
+        vertex_buffer[5] = rect.y + rect.h;
+
+        vertex_buffer[6] = rect.x;
+        vertex_buffer[7] = rect.y + rect.h;
+
+        // Finished with our lines
+        glDrawArrays(GL_LINE_LOOP, 0, 4);
+      }
+
+      // Restore the old matrix
+      glPopMatrix();
+
+      ++r;
+    }
+  }
+
+  if (!lines.empty()) {
+    glDisable(GL_TEXTURE_2D);
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+
+    for (auto l = lines.begin(); l != lines.end(); /**/) {
+      const DebugLine &line(*l);
+
+      if (time > line.expire) {
+        l = lines.erase(l);
+        continue;
+      }
+
+      glColor4f(line.color[0], line.color[1], line.color[2], line.color[3]);
+      glLineWidth(line.width);
+
+      glVertexPointer(2, GL_FLOAT, 0, &line.start.x);
+
+      // Finished with our triangles
+      glDrawArrays(GL_LINES, 0, 2);
+
+      ++l;
+    }
+  }
+
+  // Restore original, non-scaled matrix
+  glPopMatrix();
+
+  // Finish rendering by swap buffers
+  SDL_GL_SwapWindow(window);
+
+  GLenum err = glGetError();
+  if (err != GL_NO_ERROR) {
+    throw OpenGLException(err);
+  }
 }
 
+void DCanvas::DrawRect(SDL_Rect *rect, const color_t &color, int ttl, bool filled, bool relative) {
+  rects.emplace_back();
+  DebugRect &rect(rects.back());
+
+  rect.start.x = start->x;
+  rect.start.y = start->y;
+  rect.end.x = end->x;
+  rect.end.y = end->y;
+  rect.color = color;
+  rect.width = width;
+  rect.expire = SDL_GetTicks() + ttl;
+  rect.filled = filled
+  rect.relative = relative;
+}
+
+void DCanvas::DrawLine(SDL_Point *start, SDL_Point *end, const color_t &color, int width, int ttl, bool relative) {
+  lines.emplace_back();
+  DebugLine &line(lines.back());
+
+  line.start.x = start->x;
+  line.start.y = start->y;
+  line.end.x = end->x;
+  line.end.y = end->y;
+  line.color = color;
+  line.width = width;
+  line.expire = SDL_GetTicks() + ttl;
+  line.relative = relative;
+}
 

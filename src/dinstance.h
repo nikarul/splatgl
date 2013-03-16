@@ -39,7 +39,7 @@ public:
   float angle; /* Rotation angle to apply when renderering this image */
   float scale[2];
   Color color; /* Color to use when renderering the image. */
-  uint8_t flags;
+  uint32_t flags;
   SDL_Rect clip; /* FL_CLIPPED is set, the image is clipped to this rect */
 
   GetOrigin()
@@ -52,8 +52,11 @@ public:
   GetScale()
   SetScale()
 
-  GetVisible()
+  IsVisible()
   SetVisible()
+
+  IsRelativeToViewPosition()
+  SetRelativeToViewPosition();
 };
 
 }
