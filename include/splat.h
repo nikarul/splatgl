@@ -63,7 +63,10 @@ protected: \
 class SPLAT_PUBLIC Exception : public std::exception {};
 class SPLAT_PUBLIC BadParameterException : public Exception {};
 class SPLAT_PUBLIC WrongCanvasException : public Exception {};
-class SPLAT_PUBLIC DriverException : public Exception {};
+class SPLAT_PUBLIC DriverException : public Exception {
+public:
+  DriverException(const char *error);
+};
 
 class DCanvas;
 class DImage;

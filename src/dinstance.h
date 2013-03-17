@@ -42,6 +42,9 @@ public:
   uint32_t flags;
   SDL_Rect clip; /* FL_CLIPPED is set, the image is clipped to this rect */
 
+
+  SDL_Rect GetScaledRect();
+  SDL_Rect GetClipRect();
 //  GetOrigin()
 //  SetExtents()
 //  GetRect()

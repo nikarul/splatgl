@@ -53,6 +53,7 @@ class SPLAT_LOCAL DCanvas : public DObject {
 public:
   Canvas *q;
   SDL_Window *window;
+  SDL_GLContext glcontext;
 
   color_t clearColor;
   SDL_Point viewPos;

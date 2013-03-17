@@ -19,11 +19,21 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include <GL/gl.h>
+#include <GL/glu.h>
 #include "splat.h"
 #include "dcanvas.h"
 #include "dimage.h"
 #include "dlayer.h"
 #include "dinstance.h"
+
+#define FL_MIRROR_X 0x01
+#define FL_MIRROR_Y 0x02
+#define FL_ANTIDIAG 0x04
+#define FL_RELATIVE 0x08
+#define FL_ROTATE 0x10
+#define FL_CLIP 0x20
+#define MASK_IMAGEMOD (FL_MIRROR_X | FL_MIRROR_Y | FL_MIRROR_DIAG | FL_ROTATE_ANGLE)
 
 namespace Splat {
 
@@ -31,12 +41,12 @@ class SPLAT_LOCAL OpenGLException : public DriverException {
 public:
   GLenum error;
 
-  OpenGLException(GLenum e) : error(e) {}
+  OpenGLException(GLenum e) : DriverException("glGetErrorString(e)"), error(e) {}
 };
 
 DCanvas::DCanvas(Canvas *canvas, SDL_Window *window) : q(canvas), window(window) {
-  window_glcontext = SDL_GL_CreateContext(window);
-  if (!window_glcontext) {
+  glcontext = SDL_GL_CreateContext(window);
+  if (!glcontext) {
     throw DriverException("OpenGL context creation failed");
   }
 
@@ -44,16 +54,18 @@ DCanvas::DCanvas(Canvas *canvas, SDL_Window *window) : q(canvas), window(window)
   glShadeModel(GL_FLAT);
 
   // Default the clear color to black.
-  SetColor(0.0f, 0.0f, 0.0f, 1.0f);
+  glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
   // Setup our viewport.
+  int width, height;
+  SDL_GetWindowSize(window, &width, &height);
   glViewport(0, 0, width, height);
 
   // Change to the projection matrix and set up our ortho view
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 #if __IPHONEOS__
-  //glRotatef(-90.0f, 0.0f, 0.0f, 1.0f); // Rotate the display for landscape mode
+    //glRotatef(-90.0f, 0.0f, 0.0f, 1.0f); // Rotate the display for landscape mode
   glOrthof(0, width, 0, height, -1.0f, 1.0f); //TODO this should really be for anything using OpenGL ES
 #else
   gluOrtho2D(0, width, 0, height);
@@ -69,8 +81,8 @@ DCanvas::DCanvas(Canvas *canvas, SDL_Window *window) : q(canvas), window(window)
 }
 
 DCanvas::~DCanvas() {
-  SDL_GL_DeleteContext(window_glcontext);
-  window_glcontext = nullptr;
+  SDL_GL_DeleteContext(glcontext);
+  glcontext = nullptr;
 }
 
 void DCanvas::Render() {
@@ -93,19 +105,19 @@ void DCanvas::Render() {
   glScalef(scale[0], scale[1], 1.0f);
 
   // Specify vertex and tex coord buffers
-  glVertexPointer(3, GL_FLOAT, 0, vertex_buffer.const_pointer());
+  glVertexPointer(3, GL_FLOAT, 0, vertex_buffer.data());
   glEnableClientState(GL_VERTEX_ARRAY);
-  glTexCoordPointer(2, GL_FLOAT, 0, texcoord_buffer.const_pointer());
+  glTexCoordPointer(2, GL_FLOAT, 0, texcoord_buffer.data());
   glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-  for (auto image : images) {
-    const DImage &dimage(*image->d);
+  for (auto image = images.cbegin(); image != images.cend(); ++image) {
+    const DImage &dimage(*(image->d));
 
     // Bind our texture
-    glBindTexture(GL_TEXTURE_2D, d.texture);
+    glBindTexture(GL_TEXTURE_2D, dimage.texture);
 
-    for (auto instance : dimage.instances) {
-      const DInstance &dinst(*instance->d);
+    for (auto instance = dimage.instances.cbegin(); instance != dimage.instances.cend(); ++instance) {
+      const DInstance &dinst(*(instance->d));
 
       // Save the current matrix
       glPushMatrix();
@@ -113,14 +125,14 @@ void DCanvas::Render() {
       // Translate to the images current location
       if (dinst.flags & FL_RELATIVE) {
         // Translate relative to the current view position
-        glTranslatef(dinst.rect.x - viewPos[0], dinst.rect.y - viewPos[1], 0.0f);
+        glTranslatef(dinst.rect.x - viewPos.x, dinst.rect.y - viewPos.y, 0.0f);
       } else {
         glTranslatef(dinst.rect.x, dinst.rect.y, 0.0f);
       }
       // Set color for rendering
       glColor4f(dinst.color[0], dinst.color[1], dinst.color[2], dinst.color[3]);
 
-      scaled_rect = dinst.GetScaledRect();
+      SDL_Rect scaled_rect = dinst.GetScaledRect();
 
       // Handle rotation
       if (dinst.flags & MASK_IMAGEMOD) {
@@ -129,9 +141,9 @@ void DCanvas::Render() {
 
         glTranslatef(w2, h2, 0.0f);
 
-        if (handle->flags & FL_ROTATE_ANGLE) { glRotatef(dinst.angle, 0.0f, 0.0f, 1.0f); }
+        if (dinst.flags & FL_ROTATE_ANGLE) { glRotatef(dinst.angle, 0.0f, 0.0f, 1.0f); }
 
-        array<float, 16> matrix = { 
+        std::array<float, 16> matrix = { 
           1.0f, 0.0f, 0.0f, 0.0f, // COLUMN 1
           0.0f, 1.0f, 0.0f, 0.0f, // COLUMN 2
           0.0f, 0.0f, 1.0f, 0.0f, // COLUMN 3
@@ -147,7 +159,7 @@ void DCanvas::Render() {
           matrix[5] = 0.0f;
         }
 
-        glMultMatrix(matrix.const_pointer());
+        glMultMatrixf(matrix.data());
 
         glTranslatef(-w2, -h2, 0.0f);
       }
@@ -160,7 +172,7 @@ void DCanvas::Render() {
         glEnable(GL_SCISSOR_TEST);
 
         // Snip, snip, snip...
-        glScissor(clip.x, winHeight - (clip.y + clip->clip.h), clip.w, clip.h);
+        glScissor(clip.x, winHeight - (clip.y + clip.h), clip.w, clip.h);
       } else {
         // Disable scissoring
         glDisable(GL_SCISSOR_TEST);
