@@ -19,7 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include "splat.h"
 #include "dcanvas.h"
+#include "dimage.h"
+#include "dlayer.h"
+#include "dinstance.h"
 
 namespace Splat {
 
@@ -30,7 +34,7 @@ public:
   OpenGLException(GLenum e) : error(e) {}
 };
 
-DCanvas::DCanvas(SDL_Window *window) : window(window) {
+DCanvas::DCanvas(Canvas *canvas, SDL_Window *window) : q(canvas), window(window) {
   window_glcontext = SDL_GL_CreateContext(window);
   if (!window_glcontext) {
     throw DriverException("OpenGL context creation failed");

@@ -38,25 +38,25 @@ public:
   float depth;
   float angle; /* Rotation angle to apply when renderering this image */
   float scale[2];
-  Color color; /* Color to use when renderering the image. */
+  color_t color; /* Color to use when renderering the image. */
   uint32_t flags;
   SDL_Rect clip; /* FL_CLIPPED is set, the image is clipped to this rect */
 
-  GetOrigin()
-  SetExtents()
-  GetRect()
-  GetClipRect()
-  SetClipRect()
-  SetColor()
-  SetAngle()
-  GetScale()
-  SetScale()
-
-  IsVisible()
-  SetVisible()
-
-  IsRelativeToViewPosition()
-  SetRelativeToViewPosition();
+//  GetOrigin()
+//  SetExtents()
+//  GetRect()
+//  GetClipRect()
+//  SetClipRect()
+//  SetColor()
+//  SetAngle()
+//  GetScale()
+//  SetScale()
+//
+//  IsVisible()
+//  SetVisible()
+//
+//  IsRelativeToViewPosition()
+//  SetRelativeToViewPosition();
 };
 
 }

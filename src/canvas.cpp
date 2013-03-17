@@ -24,7 +24,7 @@
 
 namespace Splat {
 
-Canvas::Canvas(SDL_Window *window) : d(window) {}
+Canvas::Canvas(SDL_Window *window) : d(new DCanvas(this, window)) {}
 Canvas::~Canvas() {}
 
 Image *Canvas::CreateImage(SDL_Surface *surface) {
@@ -43,7 +43,7 @@ void Canvas::DestroyLayer(Layer *layer) {
   d->DestroyLayer(layer);
 }
 
-void Canvas::SetClearColor(const color_t& color) {
+void Canvas::SetClearColor(color_t& color) {
   d->SetClearColor(color);
 }
 
@@ -59,19 +59,19 @@ scale_t Canvas::GetViewScale() {
   return d->GetViewScale();
 }
 
-void Canvas::SetScale(float x, float y) {
-  return d->SetViewScale(x, y)
+void Canvas::SetViewScale(float x, float y) {
+  return d->SetViewScale(x, y);
 }
 
 void Canvas::Render() {
   d->Render();
 }
 
-void Canvas::DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int ttl, bool filled, bool relative) {
+void Canvas::DrawRect(SDL_Rect *rect, color_t &color, int width, int ttl, bool filled, bool relative) {
   d->DrawRect(rect, color, width, ttl, filled, relative);
 }
 
-void Canvas::DrawLine(SDL_Point *start, SDL_Point *end, SDL_COLOR *color, int width, int ttl, bool relative) {
+void Canvas::DrawLine(SDL_Point *start, SDL_Point *end, color_t &color, int width, int ttl, bool relative) {
   d->DrawLine(start, end, color, width, ttl, relative);
 }
 

@@ -31,6 +31,14 @@ class SPLAT_LOCAL DLayer : public DObject {
 public:
   const char *name;
   float depth;
+  Canvas *canvas;
+
+  DLayer(Canvas *owner);
+};
+
+class SPLAT_LOCAL QLayer : public Layer {
+public:
+  QLayer(Canvas *canvas) {}
 };
 
 }

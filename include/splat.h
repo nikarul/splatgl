@@ -53,9 +53,9 @@ namespace Splat {
 
 #define SPLAT_OBJECT_DECL(name) \
 protected: \
-  class D##name; \
-  std::unique_ptr<D##name> d;
-
+  std::unique_ptr<D##name> d; \
+  friend class D##name;
+  
 #define SPLAT_PUBLIC
 #define SPLAT_LOCAL
 #define SPLAT_INLINE
@@ -64,6 +64,14 @@ class SPLAT_PUBLIC Exception : public std::exception {};
 class SPLAT_PUBLIC BadParameterException : public Exception {};
 class SPLAT_PUBLIC WrongCanvasException : public Exception {};
 class SPLAT_PUBLIC DriverException : public Exception {};
+
+class DCanvas;
+class DImage;
+class DInstance;
+class DLayer;
+
+class Canvas;
+class Instance;
 
 /**
  * Base class for standard Splat classes
@@ -85,6 +93,7 @@ protected:
  */
 class SPLAT_PUBLIC Layer : public Object {
   SPLAT_OBJECT_DECL(Layer);
+  friend class DCanvas;
 
 public:
   /**
@@ -98,13 +107,12 @@ public:
   void Move(Layer *other);
 };
 
-class Instance;
-
 /**
  * Image class
  */
 class SPLAT_PUBLIC Image : public Object {
   SPLAT_OBJECT_DECL(Image);
+  friend class DCanvas;
 
 public:
   /**
@@ -116,7 +124,7 @@ public:
    *                 subimage to use in pixels.  If null, assume
    *                 the full bounds of the image.
    * 
-   * @return Instance* New instance handle.
+   * @return Instance * - New instance handle.
    */
   Instance *CreateInstance(Layer *Layer, int x, int y, SDL_Rect *subimage = nullptr);
 
@@ -130,7 +138,8 @@ public:
  */
 class SPLAT_PUBLIC Instance : public Object {
   SPLAT_OBJECT_DECL(Instance);
-
+  friend class DCanvas;
+  
 public:
   /**
    * Set the position of the image instance. 
@@ -259,8 +268,8 @@ public:
 
   void Render();
 
-  void DrawRect(SDL_Rect *rect, SDL_Color *color, int width = 1, int ttl = 0, bool filled = false, bool relative = true);
-  void DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width = 1, int ttl = 0, bool relative = true);
+  void DrawRect(SDL_Rect *rect, color_t &color, int width = 1, int ttl = 0, bool filled = false, bool relative = true);
+  void DrawLine(SDL_Point *start, SDL_Point *end, color_t &color, int width = 1, int ttl = 0, bool relative = true);
 };
 
 }
