@@ -22,6 +22,8 @@
 #ifndef __LIB_SPLAT_SRC_DIMAGE_H__
 #define __LIB_SPLAT_SRC_DIMAGE_H__
 
+#include <forward_list>
+#include <GL/gl.h>
 #include "splat.h"
 #include "dobject.h"
 
@@ -37,10 +39,11 @@ public:
 
   DImage(SDL_Surface *surface);
 
-  Instance *CreateInstance(Layer *Layer, int x, int y, SDL_Rect *subimage = nullptr);
+  Instance *CreateInstance(int x, int y, int layer, SDL_Rect *subimage = nullptr);
 
   void Update(SDL_Surface *surface);
-  extents_t GetExtents() const;
+
+  SPLAT_INLINE extents_t GetExtents() const { return extents; }
 };
 
 class SPLAT_LOCAL QImage : public Image {

@@ -56,9 +56,19 @@ protected: \
   std::unique_ptr<D##name> d; \
   friend class D##name;
   
-#define SPLAT_PUBLIC
-#define SPLAT_LOCAL
-#define SPLAT_INLINE
+#ifdef __WIN32__
+  #define SPLAT_PUBLIC	__declspec(dllexport)
+  #define SPLAT_LOCAL
+  #ifdef __GNUC__
+    #define SPLAT_INLINE inline
+  #else
+    #define SPLAT_INLINE __force_inline
+  #endif
+#else
+  #define SPLAT_PUBLIC	__attribute__ ((visibility("default")))
+  #define SPLAT_LOCAL	__attribute__ ((visibility("hidden")))
+  #define SPLAT_INLINE inline
+#endif
 
 class SPLAT_PUBLIC Exception : public std::exception {};
 class SPLAT_PUBLIC BadParameterException : public Exception {};
@@ -71,10 +81,13 @@ public:
 class DCanvas;
 class DImage;
 class DInstance;
-class DLayer;
 
 class Canvas;
 class Instance;
+
+typedef std::array<float, 2> scale_t;
+typedef std::array<uint32_t, 2> extents_t;
+typedef std::array<float, 4> color_t;
 
 /**
  * Base class for standard Splat classes
@@ -92,25 +105,6 @@ protected:
 };
 
 /**
- * Layer class
- */
-class SPLAT_PUBLIC Layer : public Object {
-  SPLAT_OBJECT_DECL(Layer);
-  friend class DCanvas;
-
-public:
-  /**
-   * Move this layer above the given layer 
-   *  
-   * @param other - Layer 
-   *  
-   * @raises BadParameterException - If the other layer is invalid. 
-   * @raises WrongCanvasException - If the layer does belong to the same canvas as this layer.
-   */
-  void Move(Layer *other);
-};
-
-/**
  * Image class
  */
 class SPLAT_PUBLIC Image : public Object {
@@ -121,7 +115,7 @@ public:
   /**
    * Create an instance of this image on the image's canvas.
    * 
-   * @param layer - Layer at which to render.
+   * @param layer - Layer depth at which to render.
    * @param position - Position at which to render.
    * @param subimage - Pointer to SDL_Rect that specifies the 
    *                 subimage to use in pixels.  If null, assume
@@ -129,11 +123,10 @@ public:
    * 
    * @return Instance * - New instance handle.
    */
-  Instance *CreateInstance(Layer *Layer, int x, int y, SDL_Rect *subimage = nullptr);
+  Instance *CreateInstance(int x, int y, int layer, SDL_Rect *subimage = nullptr);
 
   void Update(SDL_Surface *surface);
-  int GetWidth();
-  int GetHeight();
+  extents_t GetExtents();
 };
 
 /**
@@ -182,21 +175,16 @@ public:
   /**
    * Set the layer for this instance.
    * 
-   * @param layer - Layer to render this instance 
-   *  
-   * @raises BadParameterException - Thrown if layer is 
-   *         invalid.
-   * @raises WrongCanvasException - If the layer does belong to 
-   *         the same canvas as this instance.
+   * @param layer - Layer depth at which to render this instance 
    */
-  void SetLayer(Layer *layer);
+  void SetLayer(int layer);
 
   /**
    * Get the layer for this instance.
    * 
-   * @return Layer in which this instance renders
+   * @return Layer depth in which this instance renders
    */
-  Layer *GetLayer();
+  int GetLayer();
 
   /**
    * Set the image the instance refers. 
@@ -220,10 +208,6 @@ public:
    */
   void SetImage(Image *image, SDL_Rect *subimage = nullptr);
 };
-
-typedef std::array<float, 2> scale_t;
-typedef std::array<uint32_t, 2> extents_t;
-typedef std::array<float, 4> color_t;
 
 /**
  * Canvas class
@@ -258,9 +242,6 @@ public:
   Image *CreateImage(SDL_Surface *surface);
   void DestroyImage(Image *image);
 
-  Layer *CreateLayer();
-  void DestroyLayer(Layer *layer);
-
   void SetClearColor(color_t &color);
 
   SDL_Point GetViewPosition();
@@ -271,8 +252,8 @@ public:
 
   void Render();
 
-  void DrawRect(SDL_Rect *rect, color_t &color, int width = 1, int ttl = 0, bool filled = false, bool relative = true);
-  void DrawLine(SDL_Point *start, SDL_Point *end, color_t &color, int width = 1, int ttl = 0, bool relative = true);
+  void DrawRect(SDL_Rect *rect, color_t &color, unsigned int width = 1, unsigned int ttl = 0, bool filled = false, bool relative = true);
+  void DrawLine(SDL_Point *start, SDL_Point *end, color_t &color, unsigned int width = 1, unsigned int ttl = 0, bool relative = true);
 };
 
 }

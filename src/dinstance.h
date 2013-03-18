@@ -27,6 +27,15 @@
 
 namespace Splat {
 
+constexpr uint32_t FL_MIRROR_X(0x01);
+constexpr uint32_t FL_MIRROR_Y(0x02);
+constexpr uint32_t FL_ANTIDIAG(0x04);
+constexpr uint32_t FL_RELATIVE(0x08);
+constexpr uint32_t FL_ROTATE(0x10);
+constexpr uint32_t FL_CLIP(0x20);
+constexpr uint32_t FL_HIDDEN(0x40);
+constexpr uint32_t MASK_IMAGEMOD(FL_MIRROR_X | FL_MIRROR_Y | FL_ANTIDIAG | FL_ROTATE);
+
 class SPLAT_LOCAL DInstance : public DObject {
 public:
   GLuint texture;
@@ -35,31 +44,35 @@ public:
   float t1;
   float s2;
   float t2;
-  float depth;
-  float angle; /* Rotation angle to apply when renderering this image */
-  float scale[2];
-  color_t color; /* Color to use when renderering the image. */
+  int layer;
+  float angle; /* Rotation angle to apply when rendering this image */
+  scale_t scale;
+  color_t color; /* Color to use when rendering the image. */
   uint32_t flags;
   SDL_Rect clip; /* FL_CLIPPED is set, the image is clipped to this rect */
 
 
-  SDL_Rect GetScaledRect();
-  SDL_Rect GetClipRect();
-//  GetOrigin()
-//  SetExtents()
-//  GetRect()
-//  GetClipRect()
-//  SetClipRect()
-//  SetColor()
-//  SetAngle()
-//  GetScale()
-//  SetScale()
-//
-//  IsVisible()
-//  SetVisible()
-//
-//  IsRelativeToViewPosition()
-//  SetRelativeToViewPosition();
+  SPLAT_INLINE SDL_Rect GetScaledRect() const { return rect; }
+
+  SPLAT_INLINE SDL_Rect GetClipRect() const { return clip; }
+  SPLAT_INLINE void SetClipRect(const SDL_Rect *rect) const;
+
+  SPLAT_INLINE SDL_Rect GetRect() const { return rect; }
+
+  SPLAT_INLINE void SetColor(const color_t& color) { this->color = color; }
+
+  SPLAT_INLINE void SetAngle(float angle) { this->angle = angle; }
+
+  SPLAT_INLINE scale_t GetScale() const { return scale; }
+  SPLAT_INLINE void SetScale(const scale_t &scale) { this->scale = scale; }
+
+  SPLAT_INLINE bool IsVisible() const { return (flags & FL_HIDDEN) == 0; }
+  SPLAT_INLINE void SetVisible(bool visible);
+
+  SPLAT_INLINE bool IsRelativeToViewPosition() const { return (flags & FL_RELATIVE) == FL_RELATIVE; }
+  SPLAT_INLINE void SetRelativeToViewPosition(bool visible);
+
+  SPLAT_INLINE int GetLayer() const { return layer; }
 };
 
 }

@@ -28,23 +28,23 @@
 #include "dobject.h"
 #include "dimage.h"
 #include "dinstance.h"
-#include "dlayer.h"
 
 namespace Splat {
 
-struct DebugLine {
+struct SPLAT_LOCAL DebugLine {
   SDL_Point start;
   SDL_Point end;
   color_t color;
-  int width;
-  int32_t expire;
+  uint32_t width;
+  uint32_t expire;
   bool relative;
 };
 
-struct DebugRect {
+struct SPLAT_LOCAL DebugRect {
   SDL_Rect rect;
   color_t color;
-  int32_t expire;
+  uint32_t width;
+  uint32_t expire;
   bool filled;
   bool relative;
 };
@@ -61,7 +61,6 @@ public:
   std::forward_list<QImage> images;
   std::forward_list<DebugRect> rects;
   std::forward_list<DebugLine> lines;
-  std::forward_list<QLayer> layers;
 
   std::array<float, 18> vertex_buffer;
   std::array<float, 12> texcoord_buffer;
@@ -71,9 +70,6 @@ public:
 
   SPLAT_INLINE Image *CreateImage(SDL_Surface *surface);
   SPLAT_INLINE void DestroyImage(Image *image);
-
-  SPLAT_INLINE Layer *CreateLayer();
-  SPLAT_INLINE void DestroyLayer(Layer *layer);
 
   SPLAT_INLINE void SetClearColor(const color_t &color);
 
@@ -85,8 +81,8 @@ public:
 
   void Render();
 
-  void DrawRect(SDL_Rect *rect, const color_t &color, int width, int ttl, bool filled, bool relative);
-  void DrawLine(SDL_Point *start, SDL_Point *end, const color_t &color, int width, int ttl, bool relative);
+  void DrawRect(SDL_Rect *rect, const color_t &color, unsigned int width, unsigned int ttl, bool filled, bool relative);
+  void DrawLine(SDL_Point *start, SDL_Point *end, const color_t &color, unsigned int width, unsigned int ttl, bool relative);
 };
 
 Image *DCanvas::CreateImage(SDL_Surface *surface) {
@@ -94,21 +90,12 @@ Image *DCanvas::CreateImage(SDL_Surface *surface) {
   return &images.front();
 }
 
-Layer *DCanvas::CreateLayer() {
-  layers.emplace_front(q);
-  return &layers.front();
-}
-
-void DCanvas::DestroyLayer(Layer *layer) {
-  if (layer == nullptr) {
+void DCanvas::DestroyImage(Image *image) {
+  if (image == nullptr) {
     throw BadParameterException();
   }
 
-  if (layer->d->canvas != q) {
-    throw WrongCanvasException();
-  }
-
-  layers.remove_if([=](const Layer &other) { return other.d == layer->d; });
+  images.remove_if([=](const Image &other) { return other.d == image->d; });
 }
 
 void DCanvas::SetClearColor(const color_t &color) {

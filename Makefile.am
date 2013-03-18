@@ -11,7 +11,8 @@ libsplatinclude_HEADERS = \
 
 libsplat_la_SOURCES = \
     src/canvas.cpp \
-    src/dcanvas.cpp
+    src/dcanvas.cpp \
+    src/dimage.cpp
 
 if USE_VERSION_RC
 libsplat_la_LDFLAGS =      \

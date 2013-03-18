@@ -24,20 +24,12 @@
 #include "splat.h"
 #include "dcanvas.h"
 #include "dimage.h"
-#include "dlayer.h"
 #include "dinstance.h"
-
-#define FL_MIRROR_X 0x01
-#define FL_MIRROR_Y 0x02
-#define FL_ANTIDIAG 0x04
-#define FL_RELATIVE 0x08
-#define FL_ROTATE 0x10
-#define FL_CLIP 0x20
-#define MASK_IMAGEMOD (FL_MIRROR_X | FL_MIRROR_Y | FL_MIRROR_DIAG | FL_ROTATE_ANGLE)
 
 namespace Splat {
 
-class SPLAT_LOCAL OpenGLException : public DriverException {
+//TODO all exceptions must be part of the ABI
+class SPLAT_PUBLIC OpenGLException : public DriverException {
 public:
   GLenum error;
 
@@ -141,7 +133,7 @@ void DCanvas::Render() {
 
         glTranslatef(w2, h2, 0.0f);
 
-        if (dinst.flags & FL_ROTATE_ANGLE) { glRotatef(dinst.angle, 0.0f, 0.0f, 1.0f); }
+        if (dinst.flags & FL_ROTATE) { glRotatef(dinst.angle, 0.0f, 0.0f, 1.0f); }
 
         std::array<float, 16> matrix = { 
           1.0f, 0.0f, 0.0f, 0.0f, // COLUMN 1
@@ -150,9 +142,9 @@ void DCanvas::Render() {
           0.0f, 0.0f, 0.0f, 1.0f, // COLUMN 4
         };
 
-        if (handle->flags & FL_MIRROR_X) { matrix[0] = -1.0f; }
-        if (handle->flags & FL_MIRROR_Y) { matrix[5] = -1.0f; }
-        if (handle->flags & FL_ANTIDIAG) {
+        if (dinst.flags & FL_MIRROR_X) { matrix[0] = -1.0f; }
+        if (dinst.flags & FL_MIRROR_Y) { matrix[5] = -1.0f; }
+        if (dinst.flags & FL_ANTIDIAG) {
           matrix[4] = matrix[0];
           matrix[1] = matrix[5];
           matrix[0] = 0.0f;
@@ -166,7 +158,7 @@ void DCanvas::Render() {
 
       // Handle scissoring
       if (dinst.flags & FL_CLIP) {
-        SDL_Rect &clip = dinst.GetClipRect();
+        SDL_Rect clip = dinst.GetClipRect();
 
         // Enable scissoring
         glEnable(GL_SCISSOR_TEST);
@@ -178,57 +170,59 @@ void DCanvas::Render() {
         glDisable(GL_SCISSOR_TEST);
       }
 
+      const float depth = static_cast<float> (dinst.GetLayer());
+
       // Generate buffers for rendering
 
       // First triangle
-      //glTexCoord2f(handle->s1, handle->t2);
-      texcoord_buffer[0] = handle->s1;
-      texcoord_buffer[1] = handle->t2;
-      //glVertex3f(0.0f, scaled_rect.h, handle->depth);
+      //glTexCoord2f(dinst.s1, dinst.t2);
+      texcoord_buffer[0] = dinst.s1;
+      texcoord_buffer[1] = dinst.t2;
+      //glVertex3f(0.0f, scaled_rect.h, dinst.depth);
       vertex_buffer[0] = 0.0f;
       vertex_buffer[1] = scaled_rect.h;
-      vertex_buffer[2] = handle->depth;
+      vertex_buffer[2] = depth;
 
-      //glTexCoord2f(handle->s1, handle->t1);
-      texcoord_buffer[2] = handle->s1;
-      texcoord_buffer[3] = handle->t1;
-      //glVertex3f(0.0f, 0.0f, handle->depth);
+      //glTexCoord2f(dinst.s1, dinst.t1);
+      texcoord_buffer[2] = dinst.s1;
+      texcoord_buffer[3] = dinst.t1;
+      //glVertex3f(0.0f, 0.0f, dinst.depth);
       vertex_buffer[3] = 0.0f;
       vertex_buffer[4] = 0.0f;
-      vertex_buffer[5] = handle->depth;
+      vertex_buffer[5] = depth;
 
-      //glTexCoord2f(handle->s2, handle->t1);
-      texcoord_buffer[4] = handle->s2;
-      texcoord_buffer[5] = handle->t1;
-      //glVertex3f(scaled_rect.w, 0.0f, handle->depth);
+      //glTexCoord2f(dinst.s2, dinst.t1);
+      texcoord_buffer[4] = dinst.s2;
+      texcoord_buffer[5] = dinst.t1;
+      //glVertex3f(scaled_rect.w, 0.0f, dinst.depth);
       vertex_buffer[6] = scaled_rect.w;
       vertex_buffer[7] = 0.0f;
-      vertex_buffer[8] = handle->depth;
+      vertex_buffer[8] = depth;
 
       // Second triangle
-      //glTexCoord2f(handle->s2, handle->t2);
-      texcoord_buffer[6] = handle->s2;
-      texcoord_buffer[7] = handle->t2;
-      //glVertex3f(scaled_rect.w, scaled_rect.h, handle->depth);
+      //glTexCoord2f(dinst.s2, dinst.t2);
+      texcoord_buffer[6] = dinst.s2;
+      texcoord_buffer[7] = dinst.t2;
+      //glVertex3f(scaled_rect.w, scaled_rect.h, dinst.depth);
       vertex_buffer[9] = scaled_rect.w;
       vertex_buffer[10] = scaled_rect.h;
-      vertex_buffer[11] = handle->depth;
+      vertex_buffer[11] = depth;
 
-      //glTexCoord2f(handle->s1, handle->t2);
-      texcoord_buffer[8] = handle->s1;
-      texcoord_buffer[9] = handle->t2;
-      //glVertex3f(0.0f, scaled_rect.h, handle->depth);
+      //glTexCoord2f(dinst.s1, dinst.t2);
+      texcoord_buffer[8] = dinst.s1;
+      texcoord_buffer[9] = dinst.t2;
+      //glVertex3f(0.0f, scaled_rect.h, dinst.depth);
       vertex_buffer[12] = 0.0f;
       vertex_buffer[13] = scaled_rect.h;
-      vertex_buffer[14] = handle->depth;
+      vertex_buffer[14] = depth;
 
-      //glTexCoord2f(handle->s2, handle->t1);
-      texcoord_buffer[10] = handle->s2;
-      texcoord_buffer[11] = handle->t1;
-      //glVertex3f(scaled_rect.w, 0.0f, handle->depth);
+      //glTexCoord2f(dinst.s2, dinst.t1);
+      texcoord_buffer[10] = dinst.s2;
+      texcoord_buffer[11] = dinst.t1;
+      //glVertex3f(scaled_rect.w, 0.0f, dinst.depth);
       vertex_buffer[15] = scaled_rect.w;
       vertex_buffer[16] = 0.0f;
-      vertex_buffer[17] = handle->depth;
+      vertex_buffer[17] = depth;
     }
 
     // Finished with our triangles
@@ -251,62 +245,63 @@ void DCanvas::Render() {
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glVertexPointer(2, GL_FLOAT, 0, &vertex_buffer);
 
-    for (auto r = rects.begin(); r != rects.end(); /**/) {
-      const DebugRect &rect(*r);
+    auto prev = rects.cbefore_begin();
+    for (auto r = rects.cbegin(); r != rects.cend(); /**/) {
+      const DebugRect &prim(*r);
 
-      if (time > rect.expire) {
-        r = rects.erase(r);
+      if (time > prim.expire) {
+        r = rects.erase_after(prev);
         continue;
       }
 
-      glColor4f(rect.color[0], rect.color[1], rect.color[2], rect.color[3]);
+      glColor4f(prim.color[0], prim.color[1], prim.color[2], prim.color[3]);
 
       // Save the current matrix
       glPushMatrix();
 
-      if (!rect.relative) {
+      if (!prim.relative) {
         // Translate to the render context's current location
-        glTranslatef(-context->origin[0], -context->origin[1], 0.0f);
+        glTranslatef(-viewPos.x, -viewPos.y, 0.0f);
       }
 
-      glLineWidth(rect.width);
+      glLineWidth(prim.width);
 
       // Prepare to render rects
-      if (rect.fill) {
+      if (prim.filled) {
         // First triangle
-        vertex_buffer[0] = rect.x;
-        vertex_buffer[1] = rect.y;
+        vertex_buffer[0] = prim.rect.x;
+        vertex_buffer[1] = prim.rect.y;
 
-        vertex_buffer[2] = rect.x + rect.w;
-        vertex_buffer[3] = rect.y;
+        vertex_buffer[2] = prim.rect.x + prim.rect.w;
+        vertex_buffer[3] = prim.rect.y;
 
-        vertex_buffer[4] = rect.x;
-        vertex_buffer[5] = rect.y + rect.h;
+        vertex_buffer[4] = prim.rect.x;
+        vertex_buffer[5] = prim.rect.y + prim.rect.h;
 
         // Second triangle
-        vertex_buffer[6] = rect.x + rect.w;
-        vertex_buffer[7] = rect.y + rect.h;
+        vertex_buffer[6] = prim.rect.x + prim.rect.w;
+        vertex_buffer[7] = prim.rect.y + prim.rect.h;
 
-        vertex_buffer[8] = rect.y;
-        vertex_buffer[9] = rect.y + rect.h;
+        vertex_buffer[8] = prim.rect.y;
+        vertex_buffer[9] = prim.rect.y + prim.rect.h;
 
-        vertex_buffer[10] = rect.x + rect.w;
-        vertex_buffer[11] = rect.x;
+        vertex_buffer[10] = prim.rect.x + prim.rect.w;
+        vertex_buffer[11] = prim.rect.x;
 
         // Finished with our triangles
         glDrawArrays(GL_TRIANGLES, 0, 6);
       } else {
-        vertex_buffer[0] = rect.x;
-        vertex_buffer[1] = rect.y;
+        vertex_buffer[0] = prim.rect.x;
+        vertex_buffer[1] = prim.rect.y;
 
-        vertex_buffer[2] = rect.x + rect.w;
-        vertex_buffer[3] = rect.y;
+        vertex_buffer[2] = prim.rect.x + prim.rect.w;
+        vertex_buffer[3] = prim.rect.y;
 
-        vertex_buffer[4] = rect.x + rect.w;
-        vertex_buffer[5] = rect.y + rect.h;
+        vertex_buffer[4] = prim.rect.x + prim.rect.w;
+        vertex_buffer[5] = prim.rect.y + prim.rect.h;
 
-        vertex_buffer[6] = rect.x;
-        vertex_buffer[7] = rect.y + rect.h;
+        vertex_buffer[6] = prim.rect.x;
+        vertex_buffer[7] = prim.rect.y + prim.rect.h;
 
         // Finished with our lines
         glDrawArrays(GL_LINE_LOOP, 0, 4);
@@ -316,6 +311,7 @@ void DCanvas::Render() {
       glPopMatrix();
 
       ++r;
+      ++prev;
     }
   }
 
@@ -324,23 +320,25 @@ void DCanvas::Render() {
     glEnableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
+    auto prev = lines.cbefore_begin();
     for (auto l = lines.begin(); l != lines.end(); /**/) {
-      const DebugLine &line(*l);
+      const DebugLine &prim(*l);
 
-      if (time > line.expire) {
-        l = lines.erase(l);
+      if (time > prim.expire) {
+        l = lines.erase_after(prev);
         continue;
       }
 
-      glColor4f(line.color[0], line.color[1], line.color[2], line.color[3]);
-      glLineWidth(line.width);
+      glColor4f(prim.color[0], prim.color[1], prim.color[2], prim.color[3]);
+      glLineWidth(prim.width);
 
-      glVertexPointer(2, GL_FLOAT, 0, &line.start.x);
+      glVertexPointer(2, GL_FLOAT, 0, &prim.start.x);
 
       // Finished with our triangles
       glDrawArrays(GL_LINES, 0, 2);
 
       ++l;
+      ++prev;
     }
   }
 
@@ -356,32 +354,31 @@ void DCanvas::Render() {
   }
 }
 
-void DCanvas::DrawRect(SDL_Rect *rect, const color_t &color, int ttl, bool filled, bool relative) {
-  rects.emplace_back();
-  DebugRect &rect(rects.back());
+void DCanvas::DrawRect(SDL_Rect *rect, const color_t &color, unsigned int width, unsigned int ttl, bool filled, bool relative) {
+  rects.emplace_front();
+  DebugRect &prim(rects.front());
 
-  rect.start.x = start->x;
-  rect.start.y = start->y;
-  rect.end.x = end->x;
-  rect.end.y = end->y;
-  rect.color = color;
-  rect.width = width;
-  rect.expire = SDL_GetTicks() + ttl;
-  rect.filled = filled
-  rect.relative = relative;
+  prim.rect = *rect;
+  prim.color = color;
+  prim.width = width;
+  prim.expire = SDL_GetTicks() + ttl;
+  prim.filled = filled;
+  prim.relative = relative;
 }
 
-void DCanvas::DrawLine(SDL_Point *start, SDL_Point *end, const color_t &color, int width, int ttl, bool relative) {
-  lines.emplace_back();
-  DebugLine &line(lines.back());
+void DCanvas::DrawLine(SDL_Point *start, SDL_Point *end, const color_t &color, unsigned int width, unsigned int ttl, bool relative) {
+  lines.emplace_front();
+  DebugLine &prim(lines.front());
 
-  line.start.x = start->x;
-  line.start.y = start->y;
-  line.end.x = end->x;
-  line.end.y = end->y;
-  line.color = color;
-  line.width = width;
-  line.expire = SDL_GetTicks() + ttl;
-  line.relative = relative;
+  prim.start.x = start->x;
+  prim.start.y = start->y;
+  prim.end.x = end->x;
+  prim.end.y = end->y;
+  prim.color = color;
+  prim.width = width;
+  prim.expire = SDL_GetTicks() + ttl;
+  prim.relative = relative;
+}
+
 }
 
