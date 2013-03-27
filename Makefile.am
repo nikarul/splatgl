@@ -10,7 +10,9 @@ libsplatinclude_HEADERS = \
     include/csplat.h
 
 libsplat_la_SOURCES = \
+    src/object.cpp \
     src/canvas.cpp \
+    src/image.cpp \
     src/dcanvas.cpp \
     src/dimage.cpp
 

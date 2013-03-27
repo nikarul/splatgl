@@ -25,10 +25,21 @@
 
 namespace Splat {
 
-void DImage::Update(SDL_Surface *surface)
-  GLenum format;
+DImage::DImage(SDL_Surface *surface) {
+  Update(surface);
+}
+
+Instance *DImage::CreateInstance(int x, int y, int layer, SDL_Rect *subimage) {
+  return nullptr; //PLACEHOLDER
+}
+
+void DImage::Update(SDL_Surface *surface) {
+  if (!surface) {
+    throw BadParameterException();
+  }
 
   // get the number of channels in the SDL surface
+  GLenum format;
   if (surface->format->BytesPerPixel == 4) {     // contains an alpha channel
     if (surface->format->Rmask == 0x000000FF) {
       format = GL_RGBA;
@@ -42,13 +53,11 @@ void DImage::Update(SDL_Surface *surface)
       format = GL_BGR;
     }
   } else {
-    throw DriverError("SDL Surface is not true color (24 or 32-bit).");
+    throw DriverException("SDL Surface is not true color (24 or 32-bit).");
   }
 
-  if (SDL_MUSTLOCK(surface)) {
-    if (!SDL_LockSurface(surface)) {
-      throw DriverError("Failed to lock SDL surface to upload to OpenGL");
-    }
+  if (SDL_MUSTLOCK(surface) && !SDL_LockSurface(surface)) {
+    throw DriverException("Failed to lock SDL surface to upload to OpenGL");
   }
 
   // Have OpenGL generate a texture object handle for us
@@ -68,9 +77,6 @@ void DImage::Update(SDL_Surface *surface)
   // Edit the texture object's image data using the information SDL_Surface gives us
   glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
 
-  *width = surface->w;
-  *height = surface->h;
-
   if (SDL_MUSTLOCK(surface)) {
     SDL_UnlockSurface(surface);
   }
@@ -79,5 +85,7 @@ void DImage::Update(SDL_Surface *surface)
   if (err != GL_NO_ERROR) {
     throw OpenGLException(err);
   }
+}
+
 }
 

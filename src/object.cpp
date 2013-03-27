@@ -19,40 +19,20 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef __LIB_SPLAT_SRC_DIMAGE_H__
-#define __LIB_SPLAT_SRC_DIMAGE_H__
+#ifndef __LIB_SPLAT_SRC_OBJECT_H__
+#define __LIB_SPLAT_SRC_OBJECT_H__
 
-#include <forward_list>
-#include <GL/gl.h>
 #include "splat.h"
-#include "dobject.h"
-#include "dinstance.h"
 
 namespace Splat {
 
-class SPLAT_LOCAL DImage : public DObject {
-public:
-  GLuint texture;
-  extents_t extents;
+Object::Object() {}
+Object::~Object() {}
 
-  std::forward_list<Instance> instances;
-
-
-  DImage(SDL_Surface *surface);
-
-  Instance *CreateInstance(int x, int y, int layer, SDL_Rect *subimage = nullptr);
-
-  void Update(SDL_Surface *surface);
-
-  SPLAT_INLINE extents_t GetExtents() const { return extents; }
-};
-
-class SPLAT_LOCAL QImage : public Image {
-public:
-  QImage(SDL_Surface *surface) : Image(surface) {}
-};
+Object::Object(const Object &o) {}
+Object &Object::operator=(const Object &o) { return *this; }
 
 }
 
-#endif // __LIB_SPLAT_SRC_DIMAGE_H__
+#endif // __LIB_SPLAT_SRC_OBJECT_H__
 

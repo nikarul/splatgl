@@ -22,6 +22,7 @@
 #ifndef __LIB_SPLAT_H__
 #define __LIB_SPLAT_H__
 
+#include <GL/gl.h>
 #include <array>
 #include <cstdint>
 #include <exception>
@@ -78,6 +79,14 @@ public:
   DriverException(const char *error);
 };
 
+class SPLAT_PUBLIC OpenGLException : public DriverException {
+public:
+  GLenum error;
+
+  OpenGLException(GLenum e) : DriverException("glGetErrorString(e)"), error(e) {}
+};
+
+
 class DCanvas;
 class DImage;
 class DInstance;
@@ -110,6 +119,8 @@ protected:
 class SPLAT_PUBLIC Image : public Object {
   SPLAT_OBJECT_DECL(Image);
   friend class DCanvas;
+
+  Image(SDL_Surface *surface);
 
 public:
   /**

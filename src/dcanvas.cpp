@@ -28,14 +28,6 @@
 
 namespace Splat {
 
-//TODO all exceptions must be part of the ABI
-class SPLAT_PUBLIC OpenGLException : public DriverException {
-public:
-  GLenum error;
-
-  OpenGLException(GLenum e) : DriverException("glGetErrorString(e)"), error(e) {}
-};
-
 DCanvas::DCanvas(Canvas *canvas, SDL_Window *window) : q(canvas), window(window) {
   glcontext = SDL_GL_CreateContext(window);
   if (!glcontext) {
