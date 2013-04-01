@@ -90,6 +90,7 @@ public:
 class DCanvas;
 class DImage;
 class DInstance;
+class DLayer;
 
 class Canvas;
 class Instance;
@@ -114,6 +115,35 @@ protected:
 };
 
 /**
+ * Layer class
+ */
+class SPLAT_PUBLIC Layer : public Object {
+  SPLAT_OBJECT_DECL(Layer);
+  
+public:
+  /**
+   * @return std::string - Name of this layer.
+   */
+  std::string GetName();
+
+  /** 
+   * @param name - Name to assign this layer.  Not required to be 
+   *             unique.
+   */
+  void SetName(std::string &name);
+
+  /**
+   * @return SDL_Point - The offset all objects in this layer.
+   */
+  SDL_Point GetOffset();
+
+  /**
+   * @param offset - Offset to apply to all objects in this layer.
+   */
+  void SetOffset(SDL_Point *offset);
+};
+
+/**
  * Image class
  */
 class SPLAT_PUBLIC Image : public Object {
@@ -126,7 +156,7 @@ public:
   /**
    * Create an instance of this image on the image's canvas.
    * 
-   * @param layer - Layer depth at which to render.
+   * @param layer - Layer at which to render.
    * @param position - Position at which to render.
    * @param subimage - Pointer to SDL_Rect that specifies the 
    *                 subimage to use in pixels.  If null, assume
@@ -134,11 +164,13 @@ public:
    * 
    * @return Instance * - New instance handle.
    */
-  Instance *CreateInstance(int x, int y, int layer, SDL_Rect *subimage = nullptr);
+  Instance *CreateInstance(int x, int y, Layer *layer, SDL_Rect *subimage = nullptr);
 
   void Update(SDL_Surface *surface);
   extents_t GetExtents();
 };
+
+typedef std::weak_ptr<Layer> LayerRef;
 
 /**
  * Image instance class
@@ -186,16 +218,16 @@ public:
   /**
    * Set the layer for this instance.
    * 
-   * @param layer - Layer depth at which to render this instance 
+   * @param layer - Layer at which to render this instance 
    */
-  void SetLayer(int layer);
+  void SetLayer(Layer *layer);
 
   /**
    * Get the layer for this instance.
    * 
-   * @return Layer depth in which this instance renders
+   * @return Layer in which this instance renders
    */
-  int GetLayer();
+  Layer GetLayer();
 
   /**
    * Set the image the instance refers. 
@@ -254,6 +286,12 @@ public:
   void DestroyImage(Image *image);
 
   void SetClearColor(color_t &color);
+
+  LayerRef CreateLayer(std::string &name);
+  LayerRef CreateLayer(std::string &name, LayerRef below);
+  void MoveLayerToTop(LayerRef layer);
+  void MoveLayer(LayerRef layer, LayerRef below);
+  void DestroyLayer(LayerRef layerRef);
 
   SDL_Point GetViewPosition();
   void SetViewPosition(int x, int y);

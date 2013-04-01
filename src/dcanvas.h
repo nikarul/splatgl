@@ -58,6 +58,7 @@ public:
   color_t clearColor;
   SDL_Point viewPos;
   scale_t scale; // Scale factors for X and Y
+  std::forward_list<std::shared_ptr<QImage>> images;
   std::forward_list<QImage> images;
   std::forward_list<DebugRect> rects;
   std::forward_list<DebugLine> lines;
@@ -83,6 +84,11 @@ public:
 
   void DrawRect(SDL_Rect *rect, const color_t &color, unsigned int width, unsigned int ttl, bool filled, bool relative);
   void DrawLine(SDL_Point *start, SDL_Point *end, const color_t &color, unsigned int width, unsigned int ttl, bool relative);
+
+  SPLAT_INLINE LayerRef CreateLayer(std::string &name);
+  SPLAT_INLINE void DestroyLayer(LayerRef layerRef);
+  SPLAT_INLINE void MoveLayerToTop(LayerRef layerRef);
+  SPLAT_INLINE void MoveLayer(LayerRef layerRef, LayerRef sibling);
 };
 
 Image *DCanvas::CreateImage(SDL_Surface *surface) {
@@ -112,7 +118,47 @@ void DCanvas::SetViewScale(float x, float y) {
   scale[1] = y;
 }
 
+LayerRef DCanvas::CreateLayer(std::string &name) {
+  layers.emplace(layers.cbegin(), name);
+  return layers.front();
 }
 
-#endif // __LIB_SPLAT_SRC_CANVAS_H__
+void DCanvas::DestroyLayer(LayerRef layerRef) {
+  auto cit = std::find(layers.cbegin(), layers.cend(), layerRef.lock());
+  if (cit == layers.cend()) {
+    throw BadParameterException();
+  }
+}
+
+void DCanvas::MoveLayerToTop(LayerRef layerRef) {
+  shared_ptr<Layer> layer = layerRef.lock();
+
+  auto cit = std::find(layers.cbegin(), layers.cend(), layer);
+  if (cit == layers.cend()) {
+    throw BadParameterException();
+  }
+  layers.erase(cit);
+
+  layers.insert(layers.cbegin(), layer);
+}
+
+void DCanvas::MoveLayer(LayerRef layerRef, LayerRef sibling) {
+  shared_ptr<Layer> layer = layerRef.lock();
+
+  auto cit = std::find(layers.cbegin(), layers.cend(), layer);
+  if (cit == layers.cend()) {
+    throw BadParameterException();
+  }
+  layers.erase(cit);
+
+  cit = std::find(layers.cbegin(), layers.cend(), sibling.lock());
+  if (cit == layers.cend()) {
+    throw BadParameterException();
+  }
+  layers.insert(cit, layer);
+}
+
+}
+
+#endif // __LIB_SPLAT_SRC_DCANVAS_H__
 

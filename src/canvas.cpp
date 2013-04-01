@@ -67,5 +67,21 @@ void Canvas::DrawLine(SDL_Point *start, SDL_Point *end, color_t &color, unsigned
   d->DrawLine(start, end, color, width, ttl, relative);
 }
 
+LayerRef Canvas::CreateLayer(std::string &name) {
+  return d->CreateLayer(name);
+}
+
+void Canvas::DestroyLayer(LayerRef layerRef) {
+  d->DestroyLayer(layerRef);
+}
+
+void Canvas::MoveLayerToTop(LayerRef layerRef) {
+  d->MoveLayerToTop(layerRef);
+}
+
+void Canvas::MoveLayer(LayerRef layerRef, LayerRef sibling) {
+  d->MoveLayer(layerRef, sibling);
+}
+
 }
 
