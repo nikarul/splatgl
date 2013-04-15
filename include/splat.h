@@ -54,8 +54,8 @@ namespace Splat {
 
 #define SPLAT_OBJECT_DECL(name) \
 protected: \
-  std::unique_ptr<D##name> d; \
-  friend class D##name;
+  class D##name;
+  std::unique_ptr<D##name> d;  
   
 #ifdef __WIN32__
   #define SPLAT_PUBLIC	__declspec(dllexport)
@@ -87,13 +87,12 @@ public:
 };
 
 
-class DCanvas;
-class DImage;
-class DInstance;
-class DLayer;
+//class DCanvas;
+//class DImage;
+//class DInstance;
+//class DLayer;
 
 class Canvas;
-class Instance;
 
 typedef std::array<float, 2> scale_t;
 typedef std::array<uint32_t, 2> extents_t;
@@ -104,8 +103,6 @@ typedef std::array<float, 4> color_t;
  */
 class SPLAT_PUBLIC Object {
 protected:
-  friend class DObject;
-
   Object();
   ~Object();
 
@@ -122,17 +119,6 @@ class SPLAT_PUBLIC Layer : public Object {
   
 public:
   /**
-   * @return std::string - Name of this layer.
-   */
-  std::string GetName();
-
-  /** 
-   * @param name - Name to assign this layer.  Not required to be 
-   *             unique.
-   */
-  void SetName(std::string &name);
-
-  /**
    * @return SDL_Point - The offset all objects in this layer.
    */
   SDL_Point GetOffset();
@@ -141,6 +127,19 @@ public:
    * @param offset - Offset to apply to all objects in this layer.
    */
   void SetOffset(SDL_Point *offset);
+
+  /**
+   * @return scale_t - The X/Y scale applied to this layer
+   */
+  scale_t GetScale();
+
+  /**
+   * Set the X/Y scale applied to this layer
+   * 
+   * @param x - X scale factor.  1.0 means no scale (default). 
+   * @param y - X scale factor.  1.0 means no scale (default). 
+   */
+  void SetScale(float x, float y);
 };
 
 /**
@@ -148,9 +147,6 @@ public:
  */
 class SPLAT_PUBLIC Image : public Object {
   SPLAT_OBJECT_DECL(Image);
-  friend class DCanvas;
-
-  Image(SDL_Surface *surface);
 
 public:
   /**
@@ -165,19 +161,17 @@ public:
    * @return Instance * - New instance handle.
    */
   Instance *CreateInstance(int x, int y, Layer *layer, SDL_Rect *subimage = nullptr);
+  void DestroyInstance(Instance *instance);
 
   void Update(SDL_Surface *surface);
   extents_t GetExtents();
 };
-
-typedef std::weak_ptr<Layer> LayerRef;
 
 /**
  * Image instance class
  */
 class SPLAT_PUBLIC Instance : public Object {
   SPLAT_OBJECT_DECL(Instance);
-  friend class DCanvas;
   
 public:
   /**
@@ -199,21 +193,29 @@ public:
    */
   SDL_Point GetPosition();
 
-//GetOrigin()
-//SetExtents()
-//GetRect()
-//GetClipRect()
-//SetClipRect()
-//SetColor()
-//SetAngle()
-//GetScale()
-//SetScale()
+  SDL_Rect GetClipRect();
+  void SetClipRect(SDL_Rect *rect);
+  void SetColor(color_t& color);
+  void SetAngle(float angle);
+
+  /**
+   * @return scale_t - The X/Y scale applied to this image instance
+   */
+  scale_t GetScale();
+
+  /**
+   * Set the X/Y scale applied to this image instance
+   * 
+   * @param x - X scale factor.  1.0 means no scale (default). 
+   * @param y - X scale factor.  1.0 means no scale (default). 
+   */
+  void SetScale(float x, float y);
 
   bool IsFixed();
   void SetFixed(bool fixed);
 
-//IsVisible()
-//SetVisible()
+  bool IsVisible();
+  void SetVisible(bool visible);
 
   /**
    * Set the layer for this instance.
@@ -227,7 +229,7 @@ public:
    * 
    * @return Layer in which this instance renders
    */
-  Layer GetLayer();
+  Layer *GetLayer();
 
   /**
    * Set the image the instance refers. 
@@ -287,22 +289,16 @@ public:
 
   void SetClearColor(color_t &color);
 
-  LayerRef CreateLayer(std::string &name);
-  LayerRef CreateLayer(std::string &name, LayerRef below);
-  void MoveLayerToTop(LayerRef layer);
-  void MoveLayer(LayerRef layer, LayerRef below);
-  void DestroyLayer(LayerRef layerRef);
-
-  SDL_Point GetViewPosition();
-  void SetViewPosition(int x, int y);
-  
-  scale_t GetViewScale();
-  void SetViewScale(float x, float y);
+  Layer *CreateLayer();
+  Layer *CreateLayer(Layer *upper);
+  void MoveLayerToTop(Layer *layer);
+  void MoveLayer(Layer *layer, Layer *upper);
+  void DestroyLayer(Layer *layer);
 
   void Render();
 
-  void DrawRect(SDL_Rect *rect, color_t &color, unsigned int width = 1, unsigned int ttl = 0, bool filled = false, bool relative = true);
-  void DrawLine(SDL_Point *start, SDL_Point *end, color_t &color, unsigned int width = 1, unsigned int ttl = 0, bool relative = true);
+  void DrawDebugRect(SDL_Rect *rect, color_t &color, unsigned int width = 1, unsigned int ttl = 0, bool filled = false, bool relative = true);
+  void DrawDebugLine(SDL_Point *start, SDL_Point *end, color_t &color, unsigned int width = 1, unsigned int ttl = 0, bool relative = true);
 };
 
 }

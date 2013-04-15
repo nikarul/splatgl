@@ -24,7 +24,7 @@
 
 namespace Splat {
 
-Canvas::Canvas(SDL_Window *window) : d(new DCanvas(this, window)) {}
+Canvas::Canvas(SDL_Window *window) : d(this, window) {}
 Canvas::~Canvas() {}
 
 Image *Canvas::CreateImage(SDL_Surface *surface) {
@@ -39,48 +39,36 @@ void Canvas::SetClearColor(color_t& color) {
   d->SetClearColor(color);
 }
 
-SDL_Point Canvas::GetViewPosition() {
-  return d->GetViewPosition();
+Layer *Canvas::CreateLayer() {
+  return d->CreateLayer();
 }
 
-void Canvas::SetViewPosition(int x, int y) {
-  d->SetViewPosition(x, y);
+Layer *Canvas::CreateLayer(Layer *upper) {
+  return d->CreateLayer(upper);
 }
 
-scale_t Canvas::GetViewScale() {
-  return d->GetViewScale();
+void Canvas::MoveLayerToTop(Layer *layer) {
+  d->MoveLayerToTop(layer);
 }
 
-void Canvas::SetViewScale(float x, float y) {
-  return d->SetViewScale(x, y);
+void Canvas::MoveLayer(Layer *layer, Layer *upper) {
+  d->MoveLayer(layer, upper);
+}
+
+void Canvas::DestroyLayer(Layer *layer) {
+  d->DestroyLayer(layer);
 }
 
 void Canvas::Render() {
   d->Render();
 }
 
-void Canvas::DrawRect(SDL_Rect *rect, color_t &color, unsigned int width, unsigned int ttl, bool filled, bool relative) {
+void Canvas::DrawDebugRect(SDL_Rect *rect, color_t &color, unsigned int width, unsigned int ttl, bool filled, bool relative) {
   d->DrawRect(rect, color, width, ttl, filled, relative);
 }
 
-void Canvas::DrawLine(SDL_Point *start, SDL_Point *end, color_t &color, unsigned int width, unsigned int ttl, bool relative) {
+void Canvas::DrawDebugLine(SDL_Point *start, SDL_Point *end, color_t &color, unsigned int width, unsigned int ttl, bool relative) {
   d->DrawLine(start, end, color, width, ttl, relative);
-}
-
-LayerRef Canvas::CreateLayer(std::string &name) {
-  return d->CreateLayer(name);
-}
-
-void Canvas::DestroyLayer(LayerRef layerRef) {
-  d->DestroyLayer(layerRef);
-}
-
-void Canvas::MoveLayerToTop(LayerRef layerRef) {
-  d->MoveLayerToTop(layerRef);
-}
-
-void Canvas::MoveLayer(LayerRef layerRef, LayerRef sibling) {
-  d->MoveLayer(layerRef, sibling);
 }
 
 }

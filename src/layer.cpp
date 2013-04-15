@@ -24,14 +24,6 @@
 
 namespace Splat {
 
-Layer *Layer::GetParent() {
-  return d->GetParent();
-}
-
-void Layer::SetParent(Layer *layer) {
-  d->SetParent(layer);
-}
-
 Layer *Layer::GetUpperSibling() {
   return d->GetUpperSibling();
 }

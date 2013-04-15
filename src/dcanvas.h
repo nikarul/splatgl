@@ -24,6 +24,7 @@
 
 #include <GL/gl.h>
 #include <forward_list>
+#include <memory>
 #include "splat.h"
 #include "dobject.h"
 #include "dimage.h"
@@ -58,8 +59,8 @@ public:
   color_t clearColor;
   SDL_Point viewPos;
   scale_t scale; // Scale factors for X and Y
-  std::forward_list<std::shared_ptr<QImage>> images;
-  std::forward_list<QImage> images;
+  std::vector<std::unique_ptr<QImage>> images;
+  std::vector<std::unique_ptr<QLayer>> layers;
   std::forward_list<DebugRect> rects;
   std::forward_list<DebugLine> lines;
 
@@ -85,15 +86,15 @@ public:
   void DrawRect(SDL_Rect *rect, const color_t &color, unsigned int width, unsigned int ttl, bool filled, bool relative);
   void DrawLine(SDL_Point *start, SDL_Point *end, const color_t &color, unsigned int width, unsigned int ttl, bool relative);
 
-  SPLAT_INLINE LayerRef CreateLayer(std::string &name);
-  SPLAT_INLINE void DestroyLayer(LayerRef layerRef);
-  SPLAT_INLINE void MoveLayerToTop(LayerRef layerRef);
-  SPLAT_INLINE void MoveLayer(LayerRef layerRef, LayerRef sibling);
+  SPLAT_INLINE Layer *CreateLayer(std::string &name);
+  SPLAT_INLINE void DestroyLayer(Layer *layerRef);
+  SPLAT_INLINE void MoveLayerToTop(Layer *layerRef);
+  SPLAT_INLINE void MoveLayer(Layer *layerRef, Layer *sibling);
 };
 
 Image *DCanvas::CreateImage(SDL_Surface *surface) {
-  images.emplace_front(surface);
-  return &images.front();
+  images.emplace_back(surface);
+  return images.back().pointer();
 }
 
 void DCanvas::DestroyImage(Image *image) {
@@ -101,36 +102,38 @@ void DCanvas::DestroyImage(Image *image) {
     throw BadParameterException();
   }
 
-  images.remove_if([=](const Image &other) { return other.d == image->d; });
+  images.remove_if([=](const std::unique_ptr<Image> &other) { return other.pointer() == image; });
 }
 
 void DCanvas::SetClearColor(const color_t &color) {
   glClearColor(color[0], color[1], color[2], color[3]);
 }
 
-void DCanvas::SetViewPosition(int x, int y) {
-  viewPos.x = x;
-  viewPos.y = y;
+Layer *DCanvas::CreateLayer() {
+  layers.emplace(layers.cbegin());
+  return layers.front().pointer();
 }
 
-void DCanvas::SetViewScale(float x, float y) {
-  scale[0] = x;
-  scale[1] = y;
+Layer *DCanvas::CreateLayer(Layer *upper) {
+  auto upperIt = GetLayerIterator(upper);
+  if (upperIt == layers.cend()) {
+    throw BadParameterException;
+  }
+
+  layers.emplace(upperIt);
+  return layers.front().pointer();
 }
 
-LayerRef DCanvas::CreateLayer(std::string &name) {
-  layers.emplace(layers.cbegin(), name);
-  return layers.front();
-}
-
-void DCanvas::DestroyLayer(LayerRef layerRef) {
-  auto cit = std::find(layers.cbegin(), layers.cend(), layerRef.lock());
-  if (cit == layers.cend()) {
+void DCanvas::DestroyLayer(Layer *layer) {
+  auto it = std::find_if(layers.cbegin(), layers.cend(), layer);
+  if (it == layers.cend()) {
     throw BadParameterException();
   }
+
+  layers.erase(it);
 }
 
-void DCanvas::MoveLayerToTop(LayerRef layerRef) {
+void DCanvas::MoveLayerToTop(Layer *layer) {
   shared_ptr<Layer> layer = layerRef.lock();
 
   auto cit = std::find(layers.cbegin(), layers.cend(), layer);
@@ -142,7 +145,7 @@ void DCanvas::MoveLayerToTop(LayerRef layerRef) {
   layers.insert(layers.cbegin(), layer);
 }
 
-void DCanvas::MoveLayer(LayerRef layerRef, LayerRef sibling) {
+void DCanvas::MoveLayer(Layer *layerRef, Layer *sibling) {
   shared_ptr<Layer> layer = layerRef.lock();
 
   auto cit = std::find(layers.cbegin(), layers.cend(), layer);

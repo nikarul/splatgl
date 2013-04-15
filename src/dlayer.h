@@ -32,14 +32,10 @@ namespace Splat {
 
 class SPLAT_LOCAL DLayer : public DObject {
 public:
-  std::string name;
   SDL_Point offset;
-  std::forward_list<QInstance> instances;
+  std::unordered_multimap<GLuint, QInstance> instances;
 
-  DLayer(std::string &name);
-
-  SPLAT_INLINE std::string GetName() const { return name; }
-  SPLAT_INLINE void SetName(std::string name) { this->name = name; }
+  DLayer();
 
   SPLAT_INLINE SDL_Point GetOffset() const { return offset; }
   void SetOffset(SDL_Point *point);
@@ -47,7 +43,7 @@ public:
 
 class SPLAT_LOCAL QLayer : public Layer {
 public:
-  QImage(std::string &name) : d(name) {}
+  QLayer(std::string &name) : d(name) {}
 };
 
 }
