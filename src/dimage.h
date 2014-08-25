@@ -49,7 +49,7 @@ public:
 
 class SPLAT_LOCAL QImage : public Image {
 public:
-  QImage(SDL_Surface *surface) : Image(surface) {}
+  //QImage(SDL_Surface *surface) : Image(surface) {}
 };
 
 }

@@ -23,12 +23,14 @@
 #define __LIB_SPLAT_SRC_DCANVAS_H__
 
 #include <GL/gl.h>
+#include <vector>
 #include <forward_list>
 #include <memory>
 #include "splat.h"
 #include "dobject.h"
 #include "dimage.h"
 #include "dinstance.h"
+#include "dlayer.h"
 
 namespace Splat {
 
@@ -94,7 +96,7 @@ public:
 
 Image *DCanvas::CreateImage(SDL_Surface *surface) {
   images.emplace_back(surface);
-  return images.back().pointer();
+  return images.back().pointer;
 }
 
 void DCanvas::DestroyImage(Image *image) {

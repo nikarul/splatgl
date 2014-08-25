@@ -26,7 +26,7 @@
 #include "dobject.h"
 
 namespace Splat {
-S
+
 constexpr uint32_t FL_MIRROR_X(0x01);
 constexpr uint32_t FL_MIRROR_Y(0x02);
 constexpr uint32_t FL_ANTIDIAG(0x04);

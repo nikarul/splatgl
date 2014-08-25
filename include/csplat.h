@@ -245,7 +245,8 @@ extern DECLSPEC int SDLCALL Splat_LoadFragmentShader(const char *source);
 extern DECLSPEC int SDLCALL Splat_PrepareShaders();
 extern DECLSPEC int SDLCALL Splat_FinishShaders();
 
-extern DECLSPEC int SDLCALL Splat_GetError();
+extern DECLSPEC char* SDLCALL Splat_GetError();
+extern DECLSPEC void SDLCALL Splat_SetError(char* error);
 
 #ifdef __cplusplus
 }

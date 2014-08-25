@@ -54,7 +54,7 @@ namespace Splat {
 
 #define SPLAT_OBJECT_DECL(name) \
 protected: \
-  class D##name;
+  class D##name; \
   std::unique_ptr<D##name> d;  
   
 #ifdef __WIN32__
@@ -86,13 +86,8 @@ public:
   OpenGLException(GLenum e) : DriverException("glGetErrorString(e)"), error(e) {}
 };
 
-
-//class DCanvas;
-//class DImage;
-//class DInstance;
-//class DLayer;
-
 class Canvas;
+class Instance;
 
 typedef std::array<float, 2> scale_t;
 typedef std::array<uint32_t, 2> extents_t;

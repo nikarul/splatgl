@@ -23,6 +23,7 @@
 #define __LIB_SPLAT_SRC_DLAYER_H__
 
 #include <forward_list>
+#include <unordered_multimap>
 #include <GL/gl.h>
 #include "splat.h"
 #include "dobject.h"
@@ -43,7 +44,7 @@ public:
 
 class SPLAT_LOCAL QLayer : public Layer {
 public:
-  QLayer(std::string &name) : d(name) {}
+//QLayer(std::string &name) : d(name) {}
 };
 
 }
