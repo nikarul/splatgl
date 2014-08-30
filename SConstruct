@@ -1,8 +1,10 @@
 import os
 
-env = Environment()
+env = Environment(ENV = {'PATH' : os.environ['PATH'],
+                         'TERM' : os.environ['TERM'],
+                         'HOME' : os.environ['HOME']})
 
-baseflags = "-fvisibility=internal -fvisibility-inlines-internal"
+baseflags = "-fvisibility=internal -fvisibility-inlines-hidden"
 CFLAGS = "-fno-common -Wall {}".format(baseflags).split()
 CCFLAGS = CFLAGS + [ "-std=c++11" ]
 LINKFLAGS = "{} -lGL -lGLU -lSDL2".format(baseflags).split()

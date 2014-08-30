@@ -1,6 +1,6 @@
 /*
   Splat 2D Rendering Library
-  Copyright (C) 2003-2013  Michael Dale Long <mlong@digitalbytes.net>
+  Copyright (C) 2014  Michael Dale Long <mlong@digitalbytes.net>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,57 +19,51 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include <SDL_opengl.h>
+#include <algorithm>
 #include "splat.h"
-#include "dcanvas.h"
+#include "canvas.h"
 
-namespace Splat {
+static vector<Splat_Canvas> canvases;
+Splat_Canvas *activeCanvas = nullptr;
 
-Canvas::Canvas(SDL_Window *window) : d(this, window) {}
-Canvas::~Canvas() {}
-
-Image *Canvas::CreateImage(SDL_Surface *surface) {
-  return d->CreateImage(surface);
+void CanvasFinish() {
+  canvases.clear();
+  activeCanvas = nullptr;
 }
 
-void Canvas::DestroyImage(Image *image) {
-  d->DestroyImage(image);
+extern "C"
+{
+
+Splat_Canvas *Splat_CreateCanvas() {
+  canvases.emplace_back();
+  Splat_Canvas &canvas(canvases.back());
+
+  canvas.clearColor[0] = canvas.clearColor[1] = canvas.clearColor[2] = 0;
+  canvas.clearColor[3] = 1.0f;
+  canvas.scale[0] = canvas.scale[1] = 1.0f;
+  canvas.blending = GL_NEAREST;
+
+  return &canvas;
 }
 
-void Canvas::SetClearColor(color_t& color) {
-  d->SetClearColor(color);
+int Splat_DestroyCanvas(Splat_Canvas *canvas) {
+  if (!canvas) {
+    Splat_SetError("Splat_DestroyCanvas:  NULL canvas pointer.");
+    return -1;
+  }
+
+  //remove(canvases.begin(), canvases.end(), *canvas);
+  return 0;
 }
 
-Layer *Canvas::CreateLayer() {
-  return d->CreateLayer();
+Splat_Canvas *Splat_GetActiveCanvas() {
+	return activeCanvas;
 }
 
-Layer *Canvas::CreateLayer(Layer *upper) {
-  return d->CreateLayer(upper);
+void Splat_SetActiveCanvas(Splat_Canvas *canvas) {
+	activeCanvas = canvas;
 }
 
-void Canvas::MoveLayerToTop(Layer *layer) {
-  d->MoveLayerToTop(layer);
-}
-
-void Canvas::MoveLayer(Layer *layer, Layer *upper) {
-  d->MoveLayer(layer, upper);
-}
-
-void Canvas::DestroyLayer(Layer *layer) {
-  d->DestroyLayer(layer);
-}
-
-void Canvas::Render() {
-  d->Render();
-}
-
-void Canvas::DrawDebugRect(SDL_Rect *rect, color_t &color, unsigned int width, unsigned int ttl, bool filled, bool relative) {
-  d->DrawRect(rect, color, width, ttl, filled, relative);
-}
-
-void Canvas::DrawDebugLine(SDL_Point *start, SDL_Point *end, color_t &color, unsigned int width, unsigned int ttl, bool relative) {
-  d->DrawLine(start, end, color, width, ttl, relative);
-}
-
-}
+} // extern "C"
 

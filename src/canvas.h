@@ -1,6 +1,6 @@
 /*
   Splat 2D Rendering Library
-  Copyright (C) 2003-2013  Michael Dale Long <mlong@digitalbytes.net>
+  Copyright (C) 2014  Michael Dale Long <mlong@digitalbytes.net>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,40 +19,30 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef __LIB_SPLAT_SRC_DIMAGE_H__
-#define __LIB_SPLAT_SRC_DIMAGE_H__
+#ifndef __SPLAT_CANVAS_H__
+#define __SPLAT_CANVAS_H__
 
-#include <forward_list>
-#include <GL/gl.h>
-#include "splat.h"
-#include "dobject.h"
-#include "dinstance.h"
+#include <string>
+#include <vector>
+#include <SDL.h>
+#include "types.h"
 
-namespace Splat {
+using namespace std;
 
-class SPLAT_LOCAL DImage : public DObject {
-public:
-  GLuint texture;
-  extents_t extents;
-
-  std::forward_list<Instance> instances;
-
-
-  DImage(SDL_Surface *surface);
-
-  Instance *CreateInstance(int x, int y, int layer, SDL_Rect *subimage = nullptr);
-
-  void Update(SDL_Surface *surface);
-
-  SPLAT_INLINE extents_t GetExtents() const { return extents; }
+struct Splat_Canvas {
+  float clearColor[4];
+  SDL_Point origin;
+  float scale[2]; // Scale factors for X and Y
+  vector<Splat_Image> images;
+  vector<Splat_Layer> layers;
+  vector<SDL_Rect> rects; // List of rects
+  vector<Splat_Line> lines; // Python list of lines
+  int blending;
 };
 
-class SPLAT_LOCAL QImage : public Image {
-public:
-  //QImage(SDL_Surface *surface) : Image(surface) {}
-};
+extern Splat_Canvas *activeCanvas;
 
-}
+void CanvasFinish();
 
-#endif // __LIB_SPLAT_SRC_DIMAGE_H__
+#endif // __SPLAT_CANVAS_H__
 

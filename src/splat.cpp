@@ -1,6 +1,6 @@
 /*
   Splat 2D Rendering Library
-  Copyright (C) 2003-2013  Michael Dale Long <mlong@digitalbytes.net>
+  Copyright (C) 2014  Michael Dale Long <mlong@digitalbytes.net>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,33 +19,27 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "splat.h"
-#include "context.h"
+#define GL_GLEXT_PROTOTYPES
+#include <SDL_opengl.h>
+#include <GL/glu.h>
 
-SDL_Window *window = NULL;
-RenderContext *context = NULL;
-SDL_GLContext window_glcontext = NULL;
+#include <SDL.h>
+#include "splat.h"
+#include "canvas.h"
+
+static SDL_Window *window = nullptr;
+static SDL_GLContext window_glcontext = nullptr;
+static GLuint framebuffer = 0;
+static GLuint frameTexture = 0;
 
 // Public API
-extern "C" {
+extern "C"
+{
 
-extern DECLSPEC int SDLCALL Splat_Prepare(SDL_Window *userWindow, int viewportWidth, int viewportHeight) {
-  if (context) {
-    Splat_SetError("Splat already initialized!");
-    return -1;
-  }
-
-	int width, height;
-	window = userWindow;
-  SDL_GetWindowSize(window, &width, &height);
-
-  // Set up the default render context
-  context = AllocContext("default");
-  if (!context) {
-    Splat_SetError(error, "Failed to allocate default render context.\n");
-		Splat_Finish();
-    return NULL;
-  }
+int Splat_Prepare(SDL_Window *userWindow, int viewportWidth, int viewportHeight) {
+  int width, height;
+  window = userWindow;
+  SDL_GetWindowSize(userWindow, &width, &height);
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 4);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 4);
@@ -56,8 +50,8 @@ extern DECLSPEC int SDLCALL Splat_Prepare(SDL_Window *userWindow, int viewportWi
 
   window_glcontext = SDL_GL_CreateContext(window);
   if (!window_glcontext) {
-		Splat_SetError("OpenGL context creation failed.  (Check OpenGL/SDL Error)");
-		Splat_Finish();
+    Splat_SetError("OpenGL canvas creation failed.  (Check OpenGL/SDL Error)");
+    Splat_Finish();
     return -1;
   }
 
@@ -100,30 +94,28 @@ extern DECLSPEC int SDLCALL Splat_Prepare(SDL_Window *userWindow, int viewportWi
 
   /* Configure the framebuffer texture */
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, frameTexture, 0);
-  GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0};
+  GLenum DrawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
   glDrawBuffers(1, DrawBuffers);
 
   GLenum err = glGetError();
   if (err != GL_NO_ERROR) {
-		Splat_SetError("OpenGL error occurred during initialization");
-		Splat_Finish();
-		return -1;
+    Splat_SetError("OpenGL error occurred during initialization");
+    Splat_Finish();
+    return -1;
   }
 
-	return 0;
+  return 0;
 }
 
-extern DECLSPEC void SDLCALL Splat_Finish() {
-	if (window) {
-		SDL_GL_DeleteContext(window_glcontext);
-		window_glcontext = NULL;
-		window = NULL;
-	}
-
-  if (context) {
-		ClearAllContexts();
-		context = NULL;
+void Splat_Finish() {
+  if (window) {
+    SDL_GL_DeleteContext(window_glcontext);
+    window_glcontext = nullptr;
+    window = nullptr;
   }
+
+  CanvasFinish();
 }
 
 } // extern "C"
+

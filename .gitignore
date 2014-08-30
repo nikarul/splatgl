@@ -3,3 +3,5 @@ splat.vpw
 splat.vpj
 splat.vtg
 splat.vpwhistu
+*.os
+libsplat.so

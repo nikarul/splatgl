@@ -1,6 +1,6 @@
 /*
   Splat 2D Rendering Library
-  Copyright (C) 2003-2013  Michael Dale Long <mlong@digitalbytes.net>
+  Copyright (C) 2014  Michael Dale Long <mlong@digitalbytes.net>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -19,34 +19,32 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "splat.h"
-#include "dlayer.h"
+#ifndef __SPLAT_TYPES_H__
+#define __SPLAT_TYPES_H__
 
-namespace Splat {
+#include <SDL.h>
 
-Layer *Layer::GetUpperSibling() {
-  return d->GetUpperSibling();
-}
+struct Splat_Image {
+  GLuint texture;
+  uint32_t width;
+  uint32_t height;
+};
 
-void Layer::SetUpperSibling(Layer *layer) {
-  d->SetUpperSibling(layer);
-}
+struct Splat_Layer {
+  int todo;
+};
 
-std::string Layer::GetName() {
-  return d->GetName();
-}
+struct Splat_Instance {
+  int todo;
+};
 
-void Layer::SetName(std::string &name) {
-  d->SetName(name);
-}
+struct Splat_Line {
+  SDL_Point start;
+	SDL_Point end;
+	SDL_Color color;
+	int width;
+	int ttl;
+};
 
-SDL_Point Layer::GetOffset() {
-  return d->GetOffset();
-}
-
-void Layer::SetOffset(SDL_Point *point) {
-  d->SetOffset(point);
-}
-
-}
+#endif // __SPLAT_TYPES_H__
 
