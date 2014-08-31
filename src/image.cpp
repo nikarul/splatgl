@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include <algorithm>
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include "splat.h"
@@ -90,6 +91,17 @@ Splat_Image *Splat_CreateImage(SDL_Surface *surface) {
   image.height = surface->h;
 
   return &image;
+}
+
+int Splat_DestroyImage(Splat_Image *image) {
+  // Ensure we have a valid canvas
+  if (!activeCanvas) {
+	Splat_SetError("No active canvas");
+	return -1;
+  }
+
+  remove(activeCanvas->images.begin(), activeCanvas->images.end(), *image);
+  return 0;
 }
 
 } // extern "C"

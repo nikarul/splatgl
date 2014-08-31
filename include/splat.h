@@ -84,7 +84,7 @@ DECLSPEC int SDLCALL Splat_DestroyImage(Splat_Image *image);
  *
  * Splat organizes instances of images into overlapping layers.  The
  * application must create at least one layer to place any image instances.
- * The new layer will be placed at the top of the stack of layers, but
+ * The new layer will be placed at the bottom of the stack of layers, but
  * this can be rearranged with Splat_MoveLayer().
  *
  * Returns a pointer to a new Splat_Layer if successfull, NULL otherwise.
@@ -103,7 +103,8 @@ DECLSPEC int SDLCALL Splat_DestroyLayer(Splat_Layer *layer);
  *
  * Calling this will place 'layer' above 'other' in the layer stack.
  * If 'layer' is already directly above 'other', the call will succeed
- * but the stack will remain unchanged.
+ * but the stack will remain unchanged.  If 'other' is NULL, 'layer'
+ * will be placed at the bottom of the layer stack.
  *
  * Returns 0 if successful, 1 otherwise.
  */

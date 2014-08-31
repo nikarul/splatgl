@@ -30,6 +30,8 @@
 using namespace std;
 
 struct Splat_Canvas {
+  bool operator==(const Splat_Canvas &other) { return this == &other; }
+
   float clearColor[4];
   SDL_Point origin;
   float scale[2]; // Scale factors for X and Y

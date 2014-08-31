@@ -53,7 +53,7 @@ int Splat_DestroyCanvas(Splat_Canvas *canvas) {
     return -1;
   }
 
-  //remove(canvases.begin(), canvases.end(), *canvas);
+  remove(canvases.begin(), canvases.end(), *canvas);
   return 0;
 }
 

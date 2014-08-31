@@ -22,20 +22,29 @@
 #ifndef __SPLAT_TYPES_H__
 #define __SPLAT_TYPES_H__
 
+#include <vector>
 #include <SDL.h>
 
+using namespace std;
+
 struct Splat_Image {
+  bool operator==(const Splat_Image &other) { return this == &other; }
+
   GLuint texture;
   uint32_t width;
   uint32_t height;
 };
 
-struct Splat_Layer {
+struct Splat_Instance {
+  bool operator==(const Splat_Instance &other) { return this == &other; }
+
   int todo;
 };
 
-struct Splat_Instance {
-  int todo;
+struct Splat_Layer {
+  bool operator==(const Splat_Layer &other) { return this == &other; }
+
+  vector<Splat_Instance> instances;
 };
 
 struct Splat_Line {
