@@ -119,7 +119,7 @@ DECLSPEC int SDLCALL Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other);
  * Returns a pointer to the new Splat_Instance, or NULL if an
  * error occurs.
  */
-DECLSPEC SDLCALL Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, SDL_Point *position, SDL_Rect *subimage);
+DECLSPEC Splat_Instance *SDLCALL Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, SDL_Point *position, SDL_Rect *subimage);
 
 /**
  * Destroys the specified image instance.
