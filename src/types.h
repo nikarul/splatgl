@@ -59,12 +59,24 @@ struct Splat_Layer {
   vector<Splat_Instance> instances;
 };
 
+struct Splat_Rect {
+  int x1;
+  int y1;
+  int x2;
+  int y2;
+  int width;
+  SDL_Color color;
+  uint32_t ttl;
+  bool relative;
+  bool fill;
+};
+
 struct Splat_Line {
   SDL_Point start;
 	SDL_Point end;
 	SDL_Color color;
 	int width;
-	int ttl;
+	uint32_t ttl;
 };
 
 #endif // __SPLAT_TYPES_H__

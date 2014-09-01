@@ -27,18 +27,22 @@
 #include "splat.h"
 #include "canvas.h"
 
-static SDL_Window *window = nullptr;
-static SDL_GLContext window_glcontext = nullptr;
-static GLuint framebuffer = 0;
-static GLuint frameTexture = 0;
+extern SDL_Window *window;
+extern SDL_GLContext window_glcontext;
+extern GLuint framebuffer;
+extern GLuint frameTexture;
+extern int viewportWidth;
+extern int viewportHeight;
 
 // Public API
 extern "C"
 {
 
-int Splat_Prepare(SDL_Window *userWindow, int viewportWidth, int viewportHeight) {
+int Splat_Prepare(SDL_Window *userWindow, int userViewportWidth, int userViewportHeight) {
   int width, height;
   window = userWindow;
+  viewportWidth = userViewportWidth;
+  viewportHeight = userViewportHeight;
   SDL_GetWindowSize(userWindow, &width, &height);
 
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 4);

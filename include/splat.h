@@ -40,6 +40,7 @@ struct Splat_Canvas;
 #define FL_MIRROR_Y 0x02
 #define FL_MIRROR_DIAG 0x04
 #define FL_RELATIVE 0x08
+#define FL_ROTATE 0x10
 
 #ifdef __cplusplus
 extern "C"

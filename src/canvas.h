@@ -37,8 +37,8 @@ struct Splat_Canvas {
   float scale[2]; // Scale factors for X and Y
   vector<Splat_Image> images;
   vector<Splat_Layer> layers;
-  vector<SDL_Rect> rects; // List of rects
-  vector<Splat_Line> lines; // Python list of lines
+  vector<Splat_Rect> rects; // List of debug rects
+  vector<Splat_Line> lines; // List of debug lines
   int blending;
 };
 
