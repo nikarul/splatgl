@@ -36,6 +36,11 @@ struct Splat_Layer;
 struct Splat_Instance;
 struct Splat_Canvas;
 
+#define FL_MIRROR_X 0x01
+#define FL_MIRROR_Y 0x02
+#define FL_MIRROR_DIAG 0x04
+#define FL_RELATIVE 0x08
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -119,7 +124,7 @@ DECLSPEC int SDLCALL Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other);
  * Returns a pointer to the new Splat_Instance, or NULL if an
  * error occurs.
  */
-DECLSPEC Splat_Instance *SDLCALL Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, SDL_Point *position, SDL_Rect *subimage);
+DECLSPEC Splat_Instance *SDLCALL Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, SDL_Point *position, SDL_Rect *subimage, uint32_t flags);
 
 /**
  * Destroys the specified image instance.
@@ -165,7 +170,7 @@ DECLSPEC int SDLCALL Splat_SetClearColor(SDL_Color *color);
  * Returns the renderer viewport origin, or NULL if an error
  * occurs.
  */
-DECLSPEC SDL_Point *SDLCALL Splat_GetViewPosition();
+DECLSPEC int SDLCALL Splat_GetViewPosition(SDL_Point *position);
 
 /**
  * Sets the renderer viewport origin.

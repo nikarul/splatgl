@@ -38,7 +38,19 @@ struct Splat_Image {
 struct Splat_Instance {
   bool operator==(const Splat_Instance &other) { return this == &other; }
 
-  int todo;
+  GLuint texture;
+  SDL_Rect rect;
+  float s1;
+  float t1;
+  float s2;
+  float t2;
+  Splat_Layer* layer;
+  float angle; /* Rotation angle to apply when renderering this image */
+  float scale[2];
+  SDL_Color color; /* Color to use when renderering the image. */
+  uint32_t flags;
+  Splat_Instance *nextCulledHandle;
+  SDL_Rect clip; /* If not empty, the image is clipped to this rect */
 };
 
 struct Splat_Layer {

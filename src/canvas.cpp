@@ -65,5 +65,82 @@ void Splat_SetActiveCanvas(Splat_Canvas *canvas) {
 	activeCanvas = canvas;
 }
 
+int Splat_SetClearColor(SDL_Color *color) {
+  if (!activeCanvas) {
+	Splat_SetError("Splat_SetClearColor:  No active canvas.");
+	return -1;
+  }
+
+  activeCanvas->clearColor[0] = static_cast<float> (color->r) / 255.0f;
+  activeCanvas->clearColor[1] = static_cast<float> (color->g) / 255.0f;
+  activeCanvas->clearColor[2] = static_cast<float> (color->b) / 255.0f;
+  activeCanvas->clearColor[3] = static_cast<float> (color->a) / 255.0f;
+
+  return 0;
+}
+
+int Splat_GetViewPosition(SDL_Point *position) {
+  if (!position) {
+	Splat_SetError("Splat_GetViewPosition:  Invalid argument.");
+	return -1;
+  }
+
+  if (!activeCanvas) {
+	Splat_SetError("Splat_GetViewPosition:  No active canvas.");
+	return -1;
+  }
+
+  position->x = activeCanvas->origin.x;
+  position->y = activeCanvas->origin.y;
+
+  return 0;
+}
+
+int Splat_SetViewPosition(SDL_Point *position) {
+  if (!position) {
+	Splat_SetError("Splat_SetViewPosition:  Invalid argument.");
+	return -1;
+  }
+
+  if (!activeCanvas) {
+	Splat_SetError("Splat_SetViewPosition:  No active canvas.");
+	return -1;
+  }
+
+  activeCanvas->origin.x = position->x;
+  activeCanvas->origin.y = position->y;
+
+  return 0;
+}
+
+DECLSPEC int SDLCALL Splat_GetScale(float *x, float *y) {
+  if (!x || !y) {
+	Splat_SetError("Splat_SetViewPosition:  Invalid argument.");
+	return -1;
+  }
+
+  if (!activeCanvas) {
+	Splat_SetError("Splat_SetViewPosition:  No active canvas.");
+	return -1;
+  }
+
+  *x = activeCanvas->scale[0];
+  *y = activeCanvas->scale[1];
+
+  return 0;
+}
+
+int Splat_SetScale(float x, float y) {
+  if (!activeCanvas) {
+	Splat_SetError("Splat_SetViewPosition:  No active canvas.");
+	return -1;
+  }
+
+  activeCanvas->scale[0] = x;
+  activeCanvas->scale[1] = y;
+
+  return 0;
+}
+
 } // extern "C"
 
