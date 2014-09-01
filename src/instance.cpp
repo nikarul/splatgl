@@ -29,15 +29,15 @@
 extern "C"
 {
 
-Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, SDL_Point *position, SDL_Rect *subimage, uint32_t flags) {
+Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int x, int y, SDL_Rect *subimage, uint32_t flags) {
   // ALlocate the surface for this context
   layer->instances.emplace_back();
   Splat_Instance &instance(layer->instances.back());
 
   // Setup the handle
   instance.texture = image->texture;
-  instance.rect.x = position->x;
-  instance.rect.y = position->y;
+  instance.rect.x = x;
+  instance.rect.y = y;
   if (subimage) {
 	// Sanitize input subrect
 	subimage->x = max(subimage->x, 0);
@@ -78,9 +78,9 @@ int Splat_DestroyInstance(Splat_Instance *instance) {
   return 0;
 }
 
-int Splat_SetInstancePosition(Splat_Instance *instance, SDL_Point *position) {
-  instance->rect.x = position->x;
-  instance->rect.y = position->y;
+int Splat_SetInstancePosition(Splat_Instance *instance, int x, int y) {
+  instance->rect.x = x;
+  instance->rect.y = y;
   return 0;
 }
 

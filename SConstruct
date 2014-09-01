@@ -28,7 +28,10 @@ env.Append(CCFLAGS=CCFLAGS)
 env.Append(LINKFLAGS=LINKFLAGS)
 env.Append(CPPPATH=CPPPATH)
 
-
+if "CC" in os.environ:
+    env.Replace(CC = os.environ["CC"])
+if "CXX" in os.environ:
+    env.Replace(CXX = os.environ["CXX"])
 
 splat_sources = []
 for root, dirs, files in os.walk("./src"):

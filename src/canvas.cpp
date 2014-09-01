@@ -65,16 +65,16 @@ void Splat_SetActiveCanvas(Splat_Canvas *canvas) {
 	activeCanvas = canvas;
 }
 
-int Splat_SetClearColor(SDL_Color *color) {
+int Splat_SetClearColor(float r, float b, float g, float a) {
   if (!activeCanvas) {
 	Splat_SetError("Splat_SetClearColor:  No active canvas.");
 	return -1;
   }
 
-  activeCanvas->clearColor[0] = static_cast<float> (color->r) / 255.0f;
-  activeCanvas->clearColor[1] = static_cast<float> (color->g) / 255.0f;
-  activeCanvas->clearColor[2] = static_cast<float> (color->b) / 255.0f;
-  activeCanvas->clearColor[3] = static_cast<float> (color->a) / 255.0f;
+  activeCanvas->clearColor[0] = r;
+  activeCanvas->clearColor[1] = g;
+  activeCanvas->clearColor[2] = b;
+  activeCanvas->clearColor[3] = a;
 
   return 0;
 }

@@ -42,6 +42,7 @@ typedef struct Splat_Canvas Splat_Canvas;
 #define FL_MIRROR_DIAG 0x04
 #define FL_RELATIVE 0x08
 #define FL_ROTATE 0x10
+#define FL_STATIC 0x20
 
 #ifdef __cplusplus
 extern "C"
@@ -126,7 +127,7 @@ DECLSPEC int SDLCALL Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other);
  * Returns a pointer to the new Splat_Instance, or NULL if an
  * error occurs.
  */
-DECLSPEC Splat_Instance *SDLCALL Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, SDL_Point *position, SDL_Rect *subimage, uint32_t flags);
+DECLSPEC Splat_Instance *SDLCALL Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int x, int y, SDL_Rect *subimage, uint32_t flags);
 
 /**
  * Destroys the specified image instance.
@@ -140,7 +141,7 @@ DECLSPEC int SDLCALL Splat_DestroyInstance(Splat_Instance *instance);
  *
  * Returns 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_SetInstancePosition(Splat_Instance *instance, SDL_Point *position);
+DECLSPEC int SDLCALL Splat_SetInstancePosition(Splat_Instance *instance, int x, int y);
 
 /**
  * Move the specified image instance to the specified layer.
@@ -166,7 +167,7 @@ DECLSPEC int SDLCALL Splat_SetInstanceImage(Splat_Instance *instance, Splat_Imag
  *
  * Returns 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_SetClearColor(SDL_Color *color);
+DECLSPEC int SDLCALL Splat_SetClearColor(float r, float g, float b, float a);
 
 /**
  * Returns the renderer viewport origin, or NULL if an error
@@ -215,7 +216,7 @@ DECLSPEC int SDLCALL Splat_Render();
  *
  * @return 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int ttl);
+DECLSPEC int SDLCALL Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int flags, int ttl);
 
 /**
  * Draw a filled rectangle.  Intended primarily for debugging.
@@ -265,6 +266,8 @@ DECLSPEC const char *SDLCALL Splat_GetError();
 DECLSPEC void SDLCALL Splat_SetError(const char *error);
 
 #define Splat_ClearError() Splat_SetError(0)
+
+DECLSPEC int SDLCALL Splat_GetImageSize(Splat_Image *image, int *x, int *y);
 
 #ifdef __cplusplus
 }
