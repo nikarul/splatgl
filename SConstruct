@@ -4,10 +4,22 @@ env = Environment(ENV = {'PATH' : os.environ['PATH'],
                          'TERM' : os.environ['TERM'],
                          'HOME' : os.environ['HOME']})
 
+TARGET = ARGUMENTS.get("TARGET", "debug")
+if TARGET not in [ "debug", "release" ]:
+	print("Invalid TARGET")
+	Exit(1)
+
 baseflags = "-fvisibility=internal -fvisibility-inlines-hidden"
 CFLAGS = "-fno-common -Wall {}".format(baseflags).split()
-CCFLAGS = CFLAGS + [ "-std=c++11" ]
 LINKFLAGS = "{} -lGL -lGLU -lSDL2".format(baseflags).split()
+
+if TARGET == "debug":
+	CFLAGS += ["-O0", "-g"]
+	LINKFLAGS += [ "-g" ]
+else:
+	CFLAGS += [ "-O3" ]
+
+CCFLAGS = CFLAGS + [ "-std=c++11" ]
 CPPPATH = [ "#include",
 			"/usr/include/SDL2" ]
 
@@ -15,6 +27,8 @@ env.Append(CFLAGS=CFLAGS)
 env.Append(CCFLAGS=CCFLAGS)
 env.Append(LINKFLAGS=LINKFLAGS)
 env.Append(CPPPATH=CPPPATH)
+
+
 
 splat_sources = []
 for root, dirs, files in os.walk("./src"):

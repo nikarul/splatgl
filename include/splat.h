@@ -25,16 +25,17 @@
  * Main include header for the Splat C API
  */
 
+#include <stdint.h>
 #include <SDL2/begin_code.h>
-struct SDL_Window;
-struct SDL_Surface;
-struct SDL_Point;
-struct SDL_Rect;
-struct SDL_Color;
-struct Splat_Image;
-struct Splat_Layer;
-struct Splat_Instance;
-struct Splat_Canvas;
+typedef struct SDL_Window SDL_Window;
+typedef struct SDL_Surface SDL_Surface;
+typedef struct SDL_Point SDL_Point;
+typedef struct SDL_Rect SDL_Rect;
+typedef struct SDL_Color SDL_Color;
+typedef struct Splat_Image Splat_Image;
+typedef struct Splat_Layer Splat_Layer;
+typedef struct Splat_Instance Splat_Instance;
+typedef struct Splat_Canvas Splat_Canvas;
 
 #define FL_MIRROR_X 0x01
 #define FL_MIRROR_Y 0x02
@@ -260,8 +261,10 @@ DECLSPEC int SDLCALL Splat_LoadFragmentShader(const char *source);
 DECLSPEC int SDLCALL Splat_PrepareShaders();
 DECLSPEC int SDLCALL Splat_FinishShaders();
 
-DECLSPEC char *SDLCALL Splat_GetError();
+DECLSPEC const char *SDLCALL Splat_GetError();
 DECLSPEC void SDLCALL Splat_SetError(const char *error);
+
+#define Splat_ClearError() Splat_SetError(0)
 
 #ifdef __cplusplus
 }
