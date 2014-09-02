@@ -51,8 +51,9 @@ CreateCanvas = _libsplat.Splat_CreateCanvas
 DestroyCanvas = _libsplat.Splat_DestroyCanvas
 GetError = _libsplat.Splat_GetError
 SetError = _libsplat.Splat_SetError
-GetCanvas = _libsplat.Splat_GetCanvas
-SetCanvas = _libsplat.Splat_SetCanvas
+GetActiveCanvas = _libsplat.Splat_GetActiveCanvas
+SetActiveCanvas = _libsplat.Splat_SetActiveCanvas
+GetImageSize = _libsplat.Splat_GetImageSize
 
 def DrawRect(*args):
     pass ###TODO

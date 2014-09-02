@@ -267,7 +267,7 @@ DECLSPEC void SDLCALL Splat_SetError(const char *error);
 
 #define Splat_ClearError() Splat_SetError(0)
 
-DECLSPEC int SDLCALL Splat_GetImageSize(Splat_Image *image, int *x, int *y);
+DECLSPEC int SDLCALL Splat_GetImageSize(Splat_Image *image, uint32_t *width, uint32_t *height);
 
 #ifdef __cplusplus
 }

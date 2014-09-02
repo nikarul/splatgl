@@ -104,5 +104,12 @@ int Splat_DestroyImage(Splat_Image *image) {
   return 0;
 }
 
+int Splat_GetImageSize(Splat_Image *image, uint32_t *width, uint32_t *height) {
+  *width = image->width;
+  *height = image->height;
+  return 0;
+}
+
+
 } // extern "C"
 
