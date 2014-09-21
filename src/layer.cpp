@@ -36,8 +36,8 @@ Splat_Layer *Splat_CreateLayer() {
   }
 
   // ALlocate the surface for this context
-  activeCanvas->layers.emplace_back();
-  Splat_Layer &layer(activeCanvas->layers.back());
+  activeCanvas->layers.emplace_front();
+  Splat_Layer &layer(activeCanvas->layers.front());
 
   //TODO init layer
 
@@ -73,7 +73,7 @@ int Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other) {
 	return -1;
   }
 
-  auto itRight = (other) ? find(activeCanvas->layers.begin(), activeCanvas->layers.end(), *other) : activeCanvas->layers.end() - 1;
+  auto itRight = (other) ? find(activeCanvas->layers.begin(), activeCanvas->layers.end(), *other) : activeCanvas->layers.begin();
   if (itRight == activeCanvas->layers.end()) {
 	Splat_SetError("Splat_MoveError:  'Other' layer not found in active canvas.");
 	return -1;

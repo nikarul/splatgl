@@ -23,7 +23,7 @@
 #define __SPLAT_CANVAS_H__
 
 #include <string>
-#include <vector>
+#include <forward_list>
 #include <SDL.h>
 #include "types.h"
 
@@ -35,10 +35,10 @@ struct Splat_Canvas {
   float clearColor[4];
   SDL_Point origin;
   float scale[2]; // Scale factors for X and Y
-  vector<Splat_Image> images;
-  vector<Splat_Layer> layers;
-  vector<Splat_Rect> rects; // List of debug rects
-  vector<Splat_Line> lines; // List of debug lines
+  forward_list<Splat_Image> images;
+  forward_list<Splat_Layer> layers;
+  forward_list<Splat_Rect> rects; // List of debug rects
+  forward_list<Splat_Line> lines; // List of debug lines
   int blending;
 };
 

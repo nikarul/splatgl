@@ -36,8 +36,8 @@ Splat_Image *Splat_CreateImage(SDL_Surface *surface) {
   }
 
   // ALlocate the surface for this context
-  activeCanvas->images.emplace_back();
-  Splat_Image &image(activeCanvas->images.back());
+  activeCanvas->images.emplace_front();
+  Splat_Image &image(activeCanvas->images.front());
 
   // Get the number of channels in the SDL surface
   GLenum format;

@@ -1,7 +1,7 @@
 import os
 
 env = Environment(ENV = {'PATH' : os.environ['PATH'],
-                         'TERM' : os.environ['TERM'],
+#                         'TERM' : os.environ['TERM'],
                          'HOME' : os.environ['HOME']})
 
 TARGET = ARGUMENTS.get("TARGET", "debug")

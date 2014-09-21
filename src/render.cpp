@@ -248,7 +248,7 @@ int Splat_Render() {
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
     glVertexPointer(2, GL_FLOAT, 0, &vertex_buffer);
 
-    for (auto it = activeCanvas->rects.begin(); it != activeCanvas->rects.end(); /**/) {
+    for (auto itPrev = activeCanvas->rects.before_begin(), it = activeCanvas->rects.begin(); it != activeCanvas->rects.end(); /**/) {
       const Splat_Rect& rect = *it;
       glColor4ub(rect.color.r, rect.color.g, rect.color.b, rect.color.a);
 
@@ -308,8 +308,9 @@ int Splat_Render() {
 
       // Expire old rects
       if (time >= rect.ttl) {
-        it = activeCanvas->rects.erase(it);
+        it = activeCanvas->rects.erase_after(itPrev);
       } else {
+        itPrev = it;
         ++it;
       }
     }
@@ -319,7 +320,7 @@ int Splat_Render() {
     glDisable(GL_TEXTURE_2D);
     glEnableClientState(GL_VERTEX_ARRAY);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    for (auto it = activeCanvas->lines.begin(); it != activeCanvas->lines.end(); /**/) {
+    for (auto itPrev = activeCanvas->lines.before_begin(), it = activeCanvas->lines.begin(); it != activeCanvas->lines.end(); /**/) {
       const Splat_Line &line = *it;
       glColor4ub(line.color.r, line.color.g, line.color.b, line.color.a);
       glLineWidth(line.width);
@@ -331,8 +332,9 @@ int Splat_Render() {
 
       // Expire old lines
       if (time >= line.ttl) {
-        it = activeCanvas->lines.erase(it);
+        it = activeCanvas->lines.erase_after(itPrev);
       } else {
+        itPrev = it;
         ++it;
       }
     }

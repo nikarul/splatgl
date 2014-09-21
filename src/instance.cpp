@@ -30,6 +30,11 @@ extern "C"
 {
 
 Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int x, int y, SDL_Rect *subimage, uint32_t flags) {
+  if (!layer) {
+	Splat_SetError("Splat_CreateInstance called with NULL layer");
+	return nullptr;
+  }
+
   // ALlocate the surface for this context
   layer->instances.emplace_back();
   Splat_Instance &instance(layer->instances.back());
