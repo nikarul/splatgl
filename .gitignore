@@ -5,3 +5,5 @@ splat.vtg
 splat.vpwhistu
 *.os
 libsplat.so
+tests/test.o
+tests/test

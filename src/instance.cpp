@@ -97,10 +97,17 @@ int Splat_SetInstanceLayer(Splat_Instance *instance, Splat_Layer *layer) {
 int Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, SDL_Rect *subimage) {
   instance->texture = image->texture;
 
-  instance->rect.x = subimage->x;
-  instance->rect.y = subimage->y;
-  instance->rect.w = subimage->w;
-  instance->rect.h = subimage->h;
+  if (subimage) {
+    instance->rect.x = subimage->x;
+    instance->rect.y = subimage->y;
+    instance->rect.w = subimage->w;
+    instance->rect.h = subimage->h;
+  } else {
+    instance->rect.x = 0;
+    instance->rect.y = 0;
+    instance->rect.w = image->width;
+    instance->rect.h = image->height;
+  }
 
   return 0;
 }

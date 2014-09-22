@@ -30,7 +30,7 @@ class error(Exception):
 			super().__init__("Undefined Splat error")
 
 def _validate_ptr(result, func, arguments):
-	print("{}{} => {}".format(func.name, arguments, result))
+	#print("{}{} => {}".format(func.name, arguments, result))
 	assert result is not None
 	if result == 0:
 		raise error()
@@ -38,7 +38,7 @@ def _validate_ptr(result, func, arguments):
 		return result
 
 def _validate_int(result, func, arguments):
-	print("{}{} => {}".format(func.name, arguments, result))
+	#print("{}{} => {}".format(func.name, arguments, result))
 	if result != 0:
 		raise error()
 	else:
@@ -94,7 +94,7 @@ _get_view_position = _bind("Splat_GetViewPosition", [POINTER(SDL_Point)], c_int,
 set_view_position =  _bind("Splat_SetViewPosition", [POINTER(SDL_Point)], c_int, _validate_int)
 _get_scale = _bind("Splat_GetScale", [POINTER(c_float), POINTER(c_float)], c_int, _validate_int)
 set_scale = _bind("Splat_SetScale", [c_float, c_float], c_int, _validate_int)
-render = _bind("Splat_Render", None, None, _validate_int)
+render = _bind("Splat_Render", None, c_int, _validate_int)
 
 create_canvas = _bind("Splat_CreateCanvas", None, POINTER(Splat_Canvas), _validate_ptr)
 destroy_canvas = _bind("Splat_DestroyCanvas", [POINTER(Splat_Canvas)], c_int, _validate_int)
