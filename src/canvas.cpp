@@ -24,7 +24,7 @@
 #include "splat.h"
 #include "canvas.h"
 
-static vector<Splat_Canvas> canvases;
+static forward_list<Splat_Canvas> canvases;
 Splat_Canvas *activeCanvas = nullptr;
 
 void CanvasFinish() {
@@ -36,8 +36,8 @@ extern "C"
 {
 
 Splat_Canvas *Splat_CreateCanvas() {
-  canvases.emplace_back();
-  Splat_Canvas &canvas(canvases.back());
+  canvases.emplace_front();
+  Splat_Canvas &canvas(canvases.front());
 
   canvas.clearColor[0] = canvas.clearColor[1] = canvas.clearColor[2] = 0;
   canvas.clearColor[3] = 1.0f;
@@ -53,8 +53,15 @@ int Splat_DestroyCanvas(Splat_Canvas *canvas) {
     return -1;
   }
 
-  remove(canvases.begin(), canvases.end(), *canvas);
-  return 0;
+  for (auto prev = canvases.before_begin(), it = canvases.begin(), end = canvases.end(); it != end; prev = it, ++it) {
+	if (&(*it) == canvas) {
+	  canvases.erase_after(prev);
+	  return 0;
+	}
+  }
+
+  Splat_SetError("Canvas not found");
+  return -1;
 }
 
 Splat_Canvas *Splat_GetActiveCanvas() {

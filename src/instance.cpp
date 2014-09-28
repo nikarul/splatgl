@@ -36,8 +36,8 @@ Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int
   }
 
   // ALlocate the surface for this context
-  layer->instances.emplace_back();
-  Splat_Instance &instance(layer->instances.back());
+  layer->instances.emplace_front();
+  Splat_Instance &instance(layer->instances.front());
 
   // Setup the handle
   instance.texture = image->texture;
@@ -79,8 +79,16 @@ Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int
 }
 
 int Splat_DestroyInstance(Splat_Instance *instance) {
-  remove(instance->layer->instances.begin(), instance->layer->instances.end(), *instance);
-  return 0;
+  forward_list<Splat_Instance> &instances = instance->layer->instances;
+  for (auto prev = instances.before_begin(), it = instances.begin(), end = instances.end(); it != end; prev = it, ++it) {
+	if (&(*it) == instance) {
+	  instances.erase_after(prev);
+	  return 0;
+	}
+  }
+
+  Splat_SetError("Instance not found");
+  return -1;
 }
 
 int Splat_SetInstancePosition(Splat_Instance *instance, int x, int y) {

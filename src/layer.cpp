@@ -51,8 +51,16 @@ int Splat_DestroyLayer(Splat_Layer *layer) {
 	return -1;
   }
 
-  remove(activeCanvas->layers.begin(), activeCanvas->layers.end(), *layer);
-  return 0;
+  forward_list<Splat_Layer> &layers = activeCanvas->layers;
+  for (auto prev = layers.before_begin(), it = layers.begin(), end = layers.end(); it != end; prev = it, ++it) {
+	if (&(*it) == layer) {
+	  layers.erase_after(prev);
+	  return 0;
+	}
+  }
+
+  Splat_SetError("Layer not found");
+  return -1;
 }
 
 int Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other) {

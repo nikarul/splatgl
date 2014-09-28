@@ -24,6 +24,7 @@
 #include <GL/glu.h>
 
 #include <algorithm>
+#include <sstream>
 #include "splat.h"
 #include "canvas.h"
 #include "types.h"
@@ -43,6 +44,21 @@ GLuint shaderProgram = 0;
 static float vertex_buffer[18]; /* Vertex buffer */
 static float texcoord_buffer[12]; /* TexCoord buffer */
 
+#define ERRCHECK() \
+  { \
+    GLenum err = glGetError(); \
+    if (err != GL_NO_ERROR) { \
+      std::stringstream buffer("OpenGL error(s): "); \
+      do { \
+        buffer << err << " "; \
+        err = glGetError(); \
+      } while (err != GL_NO_ERROR); \
+      buffer << "at " __FILE__ ":" << __LINE__; \
+      Splat_SetError(buffer.str().c_str()); \
+      return -1; \
+    } \
+  }
+
 extern "C"
 {
 
@@ -53,43 +69,43 @@ int Splat_Render() {
   SDL_GetWindowSize(window, &winwidth, &winheight);
 
   /* Render to our framebuffer */
-  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-  glViewport(0, 0, viewportWidth, viewportHeight);
+  glBindFramebuffer(GL_FRAMEBUFFER, framebuffer); ERRCHECK();
+  glViewport(0, 0, viewportWidth, viewportHeight); ERRCHECK();
 
   // Change to the projection matrix and set up our ortho view
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluOrtho2D(0, viewportWidth, 0, viewportHeight);
+  glMatrixMode(GL_PROJECTION); ERRCHECK();
+  glLoadIdentity(); ERRCHECK();
+  gluOrtho2D(0, viewportWidth, 0, viewportHeight); ERRCHECK();
 
   // Set up modelview for 2D integer coordinates
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  glTranslatef(0.375f, viewportHeight + 0.375f, 0.0f);
-  glScalef(1.0f, -1.0f, 0.001f); // Make the positive Z-axis point "out" from the view (e.g images at depth 4 will be higher than those at depth 0), and swap the Y axis
+  glMatrixMode(GL_MODELVIEW); ERRCHECK();
+  glLoadIdentity(); ERRCHECK();
+  glTranslatef(0.375f, viewportHeight + 0.375f, 0.0f); ERRCHECK();
+  glScalef(1.0f, -1.0f, 0.001f); ERRCHECK(); // Make the positive Z-axis point "out" from the view (e.g images at depth 4 will be higher than those at depth 0), and swap the Y axis
 
   // Clear the color and depth buffers.
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT); ERRCHECK();
 
   // Enable textures and blending
-  glEnable(GL_TEXTURE_2D);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_TEXTURE_2D); ERRCHECK();
+  glEnable(GL_BLEND); ERRCHECK();
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); ERRCHECK();
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, activeCanvas->blending);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, activeCanvas->blending);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, activeCanvas->blending); ERRCHECK();
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, activeCanvas->blending); ERRCHECK();
 
   // Save the current matrix
-  glPushMatrix();
+  glPushMatrix(); ERRCHECK();
 
   // Scale as necessary
-  glScalef(activeCanvas->scale[0], activeCanvas->scale[1], 1.0f);
+  glScalef(activeCanvas->scale[0], activeCanvas->scale[1], 1.0f); ERRCHECK();
   bool scaledCanvas = !(activeCanvas->scale[0] == 1.0f && activeCanvas->scale[1] == 1.0f);
 
   // Specify vertex and tex coord buffers
-  glVertexPointer(3, GL_FLOAT, 0, vertex_buffer);
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glTexCoordPointer(2, GL_FLOAT, 0, texcoord_buffer);
-  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  glVertexPointer(3, GL_FLOAT, 0, vertex_buffer); ERRCHECK();
+  glEnableClientState(GL_VERTEX_ARRAY); ERRCHECK();
+  glTexCoordPointer(2, GL_FLOAT, 0, texcoord_buffer); ERRCHECK();
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY); ERRCHECK();
 
   SDL_Rect viewRect;
   viewRect.x = activeCanvas->origin.x;
@@ -102,25 +118,25 @@ int Splat_Render() {
     for (Splat_Instance &instance : layer.instances) {
       //TODO do this once per texture
       // Bind our texture
-      glBindTexture(GL_TEXTURE_2D, instance.texture);
+      glBindTexture(GL_TEXTURE_2D, instance.texture); ERRCHECK();
 
       if ((instance.flags & FL_RELATIVE) != 0 && !SDL_HasIntersection(&instance.rect, &viewRect)) {
         continue;
       }
 
       // Save the current matrix
-      glPushMatrix();
+      glPushMatrix(); ERRCHECK();
 
       // If relative, translate to the active canvas' current location
       if (instance.flags & FL_RELATIVE) {
-        glTranslatef(-activeCanvas->origin.x, -activeCanvas->origin.y, 0.0f);
+        glTranslatef(-activeCanvas->origin.x, -activeCanvas->origin.y, 0.0f); ERRCHECK();
       }
 
       // Translate to the images current location
-      glTranslatef(instance.rect.x, instance.rect.y, 0.0f);
+      glTranslatef(instance.rect.x, instance.rect.y, 0.0f); ERRCHECK();
 
       // Set color for rendering
-      glColor4ub(instance.color.r, instance.color.g, instance.color.b, instance.color.a);
+      glColor4ub(instance.color.r, instance.color.g, instance.color.b, instance.color.a); ERRCHECK();
 
       // Scale the render rect
       scaledRect.x = instance.rect.x;
@@ -133,45 +149,45 @@ int Splat_Render() {
         const float w2 = ((float) scaledRect.w) / 2.0f;
         const float h2 = ((float) scaledRect.h) / 2.0f;
 
-        glTranslatef(w2, h2, 0.0f);
+        glTranslatef(w2, h2, 0.0f); ERRCHECK();
 
         if (instance.flags & FL_MIRROR_DIAG) {
-          glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+          glRotatef(-90.0f, 0.0f, 0.0f, 1.0f); ERRCHECK();
           if ((instance.flags & FL_MIRROR_X)) {
-            glScalef(1.0f, -1.0f, 1.0f);
+            glScalef(1.0f, -1.0f, 1.0f); ERRCHECK();
           }
           if ((instance.flags & FL_MIRROR_Y) == 0) {
-            glScalef(-1.0f, 1.0f, 1.0f);
+            glScalef(-1.0f, 1.0f, 1.0f); ERRCHECK();
           }
         } else {
           if (instance.flags & FL_MIRROR_X) {
-            glScalef(-1.0f, 1.0f, 1.0f);
+            glScalef(-1.0f, 1.0f, 1.0f); ERRCHECK();
           }
           if (instance.flags & FL_MIRROR_Y) {
-             glScalef(1.0f, -1.0f, 1.0f);
+             glScalef(1.0f, -1.0f, 1.0f); ERRCHECK();
           }
         }
         if (instance.flags & FL_ROTATE) {
-          glRotatef(instance.angle, 0.0f, 0.0f, 1.0f);
+          glRotatef(instance.angle, 0.0f, 0.0f, 1.0f); ERRCHECK();
         }
 
-        glTranslatef(-w2, -h2, 0.0f);
+        glTranslatef(-w2, -h2, 0.0f); ERRCHECK();
       }
 
       // Handle scissoring
       if (!SDL_RectEmpty(&instance.clip)) {
         // Enable scissoring
-        glEnable(GL_SCISSOR_TEST);
+        glEnable(GL_SCISSOR_TEST); ERRCHECK();
 
         // Snip, snip, snip...
         if (scaledCanvas) {
-          glScissor(instance.clip.x * activeCanvas->scale[0], winheight - ((instance.clip.y + instance.clip.h) * activeCanvas->scale[1]), instance.clip.w * activeCanvas->scale[0], instance.clip.h * activeCanvas->scale[1]);
+          glScissor(instance.clip.x * activeCanvas->scale[0], winheight - ((instance.clip.y + instance.clip.h) * activeCanvas->scale[1]), instance.clip.w * activeCanvas->scale[0], instance.clip.h * activeCanvas->scale[1]); ERRCHECK();
         } else {
-          glScissor(instance.clip.x, winheight - (instance.clip.y + instance.clip.h), instance.clip.w, instance.clip.h);
+          glScissor(instance.clip.x, winheight - (instance.clip.y + instance.clip.h), instance.clip.w, instance.clip.h); ERRCHECK();
         }
       } else {
         // Disable scissoring
-        glDisable(GL_SCISSOR_TEST);
+        glDisable(GL_SCISSOR_TEST); ERRCHECK();
       }
 
       // Prepare to render triangles
@@ -227,40 +243,40 @@ int Splat_Render() {
       vertex_buffer[17] = depth;
 
       // Finished with our triangles
-      glDrawArrays(GL_TRIANGLES, 0, 6);
+      glDrawArrays(GL_TRIANGLES, 0, 6); ERRCHECK();
 
       // Finished with our triangles
-      glPopMatrix();
+      glPopMatrix(); ERRCHECK();
     }
 
     depth += 1.0f;
   }
 
   // Disable scissoring
-  glDisable(GL_SCISSOR_TEST);
+  glDisable(GL_SCISSOR_TEST); ERRCHECK();
 
   uint32_t time = SDL_GetTicks();
 
   // Draw rects
   if (!activeCanvas->rects.empty()) {
-    glDisable(GL_TEXTURE_2D);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glVertexPointer(2, GL_FLOAT, 0, &vertex_buffer);
+    glDisable(GL_TEXTURE_2D); ERRCHECK();
+    glEnableClientState(GL_VERTEX_ARRAY); ERRCHECK();
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY); ERRCHECK();
+    glVertexPointer(2, GL_FLOAT, 0, &vertex_buffer); ERRCHECK();
 
     for (auto itPrev = activeCanvas->rects.before_begin(), it = activeCanvas->rects.begin(); it != activeCanvas->rects.end(); /**/) {
       const Splat_Rect& rect = *it;
-      glColor4ub(rect.color.r, rect.color.g, rect.color.b, rect.color.a);
+      glColor4ub(rect.color.r, rect.color.g, rect.color.b, rect.color.a); ERRCHECK();
 
       // Save the current matrix
-      glPushMatrix();
+      glPushMatrix(); ERRCHECK();
 
       if (!rect.relative) {
         // Translate to the active canvas's current location
-        glTranslatef(-activeCanvas->origin.x, -activeCanvas->origin.y, 0.0f);
+        glTranslatef(-activeCanvas->origin.x, -activeCanvas->origin.y, 0.0f); ERRCHECK();
       }
 
-      glLineWidth(rect.width);
+      glLineWidth(rect.width); ERRCHECK();
 
       // Prepare to render rects
       if (rect.fill) {
@@ -285,7 +301,7 @@ int Splat_Render() {
         vertex_buffer[11] = rect.x1;
 
         // Finished with our triangles
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 6); ERRCHECK();
       } else {
         vertex_buffer[0] = rect.x1;
         vertex_buffer[1] = rect.y1;
@@ -300,11 +316,11 @@ int Splat_Render() {
         vertex_buffer[7] = rect.y2;
 
         // Finished with our lines
-        glDrawArrays(GL_LINE_LOOP, 0, 4);
+        glDrawArrays(GL_LINE_LOOP, 0, 4); ERRCHECK();
       }
 
       // Restore the old matrix
-      glPopMatrix();
+      glPopMatrix(); ERRCHECK();
 
       // Expire old rects
       if (time >= rect.ttl) {
@@ -317,18 +333,18 @@ int Splat_Render() {
   }
 
   if (!activeCanvas->lines.empty()) {
-    glDisable(GL_TEXTURE_2D);
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisable(GL_TEXTURE_2D); ERRCHECK();
+    glEnableClientState(GL_VERTEX_ARRAY); ERRCHECK();
+    glDisableClientState(GL_TEXTURE_COORD_ARRAY); ERRCHECK();
     for (auto itPrev = activeCanvas->lines.before_begin(), it = activeCanvas->lines.begin(); it != activeCanvas->lines.end(); /**/) {
       const Splat_Line &line = *it;
-      glColor4ub(line.color.r, line.color.g, line.color.b, line.color.a);
-      glLineWidth(line.width);
+      glColor4ub(line.color.r, line.color.g, line.color.b, line.color.a); ERRCHECK();
+      glLineWidth(line.width); ERRCHECK();
 
-      glVertexPointer(2, GL_FLOAT, 0, &line.start.x);
+      glVertexPointer(2, GL_FLOAT, 0, &line.start.x); ERRCHECK();
 
       // Finished with our triangles
-      glDrawArrays(GL_LINES, 0, 2);
+      glDrawArrays(GL_LINES, 0, 2); ERRCHECK();
 
       // Expire old lines
       if (time >= line.ttl) {
@@ -341,44 +357,39 @@ int Splat_Render() {
   }
 
   // Restore original, non-scaled matrix
-  glPopMatrix();
+  glPopMatrix(); ERRCHECK();
 
   // Render to the screen
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glViewport(0, 0, winwidth, winheight); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+  glBindFramebuffer(GL_FRAMEBUFFER, 0); ERRCHECK();
+  glViewport(0, 0, winwidth, winheight); ERRCHECK(); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
-  glDisable(GL_BLEND);
-  glEnable(GL_TEXTURE_2D);
+  glDisable(GL_BLEND); ERRCHECK();
+  glEnable(GL_TEXTURE_2D); ERRCHECK();
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); ERRCHECK();
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); ERRCHECK();
 
   // Specify vertex and tex coord buffers
-  glVertexPointer(3, GL_FLOAT, 0, vertex_buffer);
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glTexCoordPointer(2, GL_FLOAT, 0, texcoord_buffer);
-  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+  glVertexPointer(3, GL_FLOAT, 0, vertex_buffer); ERRCHECK();
+  glEnableClientState(GL_VERTEX_ARRAY); ERRCHECK();
+  glTexCoordPointer(2, GL_FLOAT, 0, texcoord_buffer); ERRCHECK();
+  glEnableClientState(GL_TEXTURE_COORD_ARRAY); ERRCHECK();
 
   // Change to the projection matrix and set up our ortho view
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluOrtho2D(0, winwidth, 0, winheight);
+  glMatrixMode(GL_PROJECTION); ERRCHECK();
+  glLoadIdentity(); ERRCHECK();
+  gluOrtho2D(0, winwidth, 0, winheight); ERRCHECK();
 
   // Set up modelview for 2D integer coordinates
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-  glTranslatef(0.375f, winheight + 0.375f, 0.0f);
-  glScalef(1.0f, -1.0f, 0.001f); // Make the positive Z-axis point "out" from the view (e.g images at depth 4 will be higher than those at depth 0), and swap the Y axis
+  glMatrixMode(GL_MODELVIEW); ERRCHECK();
+  glLoadIdentity(); ERRCHECK();
+  glTranslatef(0.375f, winheight + 0.375f, 0.0f); ERRCHECK();
+  glScalef(1.0f, -1.0f, 0.001f); ERRCHECK(); // Make the positive Z-axis point "out" from the view (e.g images at depth 4 will be higher than those at depth 0), and swap the Y axis
 
-  glBindTexture(GL_TEXTURE_2D, frameTexture);
-  glColor4ub(255, 255, 255, 255);
+  glBindTexture(GL_TEXTURE_2D, frameTexture); ERRCHECK();
+  glColor4ub(255, 255, 255, 255); ERRCHECK();
 
-  glUseProgram(shaderProgram);
-  GLenum err = glGetError();
-  if (err != GL_NO_ERROR) {
-    Splat_SetError("glUseProgram() failed");
-    return -1;
-  }
+  glUseProgram(shaderProgram); ERRCHECK();
 
   if (shaderProgram) {
     float size[2];
@@ -386,16 +397,16 @@ int Splat_Render() {
 
     size[0] = viewportWidth;
     size[1] = viewportHeight;
-    uniform = glGetUniformLocation(shaderProgram, "rubyInputSize");
-    glUniform2fv(uniform, 1, size);
+    uniform = glGetUniformLocation(shaderProgram, "rubyInputSize"); ERRCHECK();
+    glUniform2fv(uniform, 1, size); ERRCHECK();
 
-    uniform = glGetUniformLocation(shaderProgram, "rubyTextureSize");
-    glUniform2fv(uniform, 1, size);
+    uniform = glGetUniformLocation(shaderProgram, "rubyTextureSize"); ERRCHECK();
+    glUniform2fv(uniform, 1, size); ERRCHECK();
 
     size[0] = winwidth;
     size[1] = winheight;
-    uniform = glGetUniformLocation(shaderProgram, "rubyOutputSize");
-    glUniform2fv(uniform, 1, size);
+    uniform = glGetUniformLocation(shaderProgram, "rubyOutputSize"); ERRCHECK();
+    glUniform2fv(uniform, 1, size); ERRCHECK();
   }
 
   // First triangle
@@ -449,9 +460,9 @@ int Splat_Render() {
   vertex_buffer[17] = 0.0f;
 
   // Finished with our triangles
-  glDrawArrays(GL_TRIANGLES, 0, 6);
+  glDrawArrays(GL_TRIANGLES, 0, 6); ERRCHECK();
 
-  glUseProgram(0);
+  glUseProgram(0); ERRCHECK();
 
   // Finish rendering by swap buffers
   SDL_GL_SwapWindow(window);

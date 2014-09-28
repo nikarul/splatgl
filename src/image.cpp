@@ -100,8 +100,16 @@ int Splat_DestroyImage(Splat_Image *image) {
 	return -1;
   }
 
-  remove(activeCanvas->images.begin(), activeCanvas->images.end(), *image);
-  return 0;
+  forward_list<Splat_Image> &images = activeCanvas->images;
+  for (auto prev = images.before_begin(), it = images.begin(), end = images.end(); it != end; prev = it, ++it) {
+	if (&(*it) == image) {
+	  images.erase_after(prev);
+	  return 0;
+	}
+  }
+
+  Splat_SetError("Image not found");
+  return -1;
 }
 
 int Splat_GetImageSize(Splat_Image *image, uint32_t *width, uint32_t *height) {

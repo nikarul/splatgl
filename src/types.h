@@ -22,7 +22,7 @@
 #ifndef __SPLAT_TYPES_H__
 #define __SPLAT_TYPES_H__
 
-#include <vector>
+#include <forward_list>
 #include <SDL.h>
 
 using namespace std;
@@ -56,7 +56,7 @@ struct Splat_Instance {
 struct Splat_Layer {
   bool operator==(const Splat_Layer &other) { return this == &other; }
 
-  vector<Splat_Instance> instances;
+  forward_list<Splat_Instance> instances;
 };
 
 struct Splat_Rect {

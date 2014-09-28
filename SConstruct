@@ -19,7 +19,7 @@ if TARGET == "debug":
 else:
 	CFLAGS += [ "-O3" ]
 
-CCFLAGS = CFLAGS + [ "-std=c++11" ]
+CCFLAGS = CFLAGS + [ "-std=c++11", "-D_GLIBCXX_DEBUG" ]
 CPPPATH = [ "#include",
 			"/usr/include/SDL2" ]
 
