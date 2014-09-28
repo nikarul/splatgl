@@ -36,8 +36,8 @@ Splat_Layer *Splat_CreateLayer() {
   }
 
   // ALlocate the surface for this context
-  activeCanvas->layers.emplace_front();
-  Splat_Layer &layer(activeCanvas->layers.front());
+  activeCanvas->layers.emplace_back();
+  Splat_Layer &layer(activeCanvas->layers.back());
 
   //TODO init layer
 
@@ -51,10 +51,10 @@ int Splat_DestroyLayer(Splat_Layer *layer) {
 	return -1;
   }
 
-  forward_list<Splat_Layer> &layers = activeCanvas->layers;
-  for (auto prev = layers.before_begin(), it = layers.begin(), end = layers.end(); it != end; prev = it, ++it) {
+  list<Splat_Layer> &layers = activeCanvas->layers;
+  for (auto it = layers.begin(), end = layers.end(); it != end; ++it) {
 	if (&(*it) == layer) {
-	  layers.erase_after(prev);
+	  layers.erase(it);
 	  return 0;
 	}
   }

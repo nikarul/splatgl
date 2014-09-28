@@ -127,7 +127,7 @@ DECLSPEC int SDLCALL Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other);
  * Returns a pointer to the new Splat_Instance, or NULL if an
  * error occurs.
  */
-DECLSPEC Splat_Instance *SDLCALL Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int x, int y, SDL_Rect *subimage, uint32_t flags);
+DECLSPEC Splat_Instance *SDLCALL Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int x, int y, float s1, float t1, float s2, float t2, uint32_t flags);
 
 /**
  * Destroys the specified image instance.
@@ -160,7 +160,7 @@ DECLSPEC int SDLCALL Splat_SetInstanceLayer(Splat_Instance *instance, Splat_Laye
  *
  * Returns 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, SDL_Rect *subimage);
+DECLSPEC int SDLCALL Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, float s1, float t1, float s2, float t2);
 
 /**
  * Set the default background color.

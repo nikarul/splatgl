@@ -29,7 +29,7 @@
 extern "C"
 {
 
-Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int x, int y, SDL_Rect *subimage, uint32_t flags) {
+Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int x, int y, float s1, float t1, float s2, float t2, uint32_t flags) {
   if (!layer) {
 	Splat_SetError("Splat_CreateInstance called with NULL layer");
 	return nullptr;
@@ -43,29 +43,13 @@ Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int
   instance.texture = image->texture;
   instance.rect.x = x;
   instance.rect.y = y;
-  if (subimage) {
-	// Sanitize input subrect
-	subimage->x = max(subimage->x, 0);
-	subimage->y = max(subimage->y, 0);
-	subimage->w = min<int>(subimage->w, image->width);
-	subimage->h = min<int>(subimage->h, image->height);
+  instance.rect.w = image->width * (s2 - s1);
+  instance.rect.h = image->height * (t2 - t1);
 
-	instance.rect.w = subimage->w;
-	instance.rect.h = subimage->h;
-
-	instance.s1 = subimage->x / image->width;
-	instance.t1 = subimage->y / image->height;
-	instance.s2 = (subimage->x + subimage->w) / image->width;
-	instance.t2 = (subimage->y + subimage->h) / image->height;
-  } else {
-	instance.rect.w = image->width;
-	instance.rect.h = image->height;
-
-	instance.s1 = 0.0f;
-	instance.t1 = 0.0f;
-	instance.s2 = 1.0f;
-	instance.t2 = 1.0f;
-  }
+  instance.s1 = s1;
+  instance.t1 = t1;
+  instance.s2 = s2;
+  instance.t2 = t2;
   instance.layer = layer;
   instance.scale[0] = 1.0f;
   instance.scale[1] = 1.0f;
@@ -102,20 +86,12 @@ int Splat_SetInstanceLayer(Splat_Instance *instance, Splat_Layer *layer) {
   return -1;
 }
 
-int Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, SDL_Rect *subimage) {
+int Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, float s1, float t1, float s2, float t2) {
   instance->texture = image->texture;
-
-  if (subimage) {
-    instance->rect.x = subimage->x;
-    instance->rect.y = subimage->y;
-    instance->rect.w = subimage->w;
-    instance->rect.h = subimage->h;
-  } else {
-    instance->rect.x = 0;
-    instance->rect.y = 0;
-    instance->rect.w = image->width;
-    instance->rect.h = image->height;
-  }
+  instance->s1 = s1;
+  instance->t1 = t1;
+  instance->s1 = s1;
+  instance->s1 = s1;
 
   return 0;
 }
