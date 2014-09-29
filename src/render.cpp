@@ -29,7 +29,7 @@
 #include "canvas.h"
 #include "types.h"
 
-#define MASK_IMAGEMOD (FL_MIRROR_X | FL_MIRROR_Y | FL_MIRROR_DIAG | FL_ROTATE)
+#define MASK_IMAGEMOD (SPLAT_MIRROR_X | SPLAT_MIRROR_Y | SPLAT_MIRROR_DIAG | SPLAT_ROTATE)
 
 SDL_Window *window = nullptr;
 SDL_GLContext window_glcontext = nullptr;
@@ -120,7 +120,7 @@ int Splat_Render() {
       // Bind our texture
       glBindTexture(GL_TEXTURE_2D, instance.texture); ERRCHECK();
 
-      if ((instance.flags & FL_RELATIVE) != 0 && !SDL_HasIntersection(&instance.rect, &viewRect)) {
+      if ((instance.flags & SPLAT_RELATIVE) != 0 && !SDL_HasIntersection(&instance.rect, &viewRect)) {
         continue;
       }
 
@@ -128,7 +128,7 @@ int Splat_Render() {
       glPushMatrix(); ERRCHECK();
 
       // If relative, translate to the active canvas' current location
-      if (instance.flags & FL_RELATIVE) {
+      if (instance.flags & SPLAT_RELATIVE) {
         glTranslatef(-activeCanvas->origin.x, -activeCanvas->origin.y, 0.0f); ERRCHECK();
       }
 
@@ -151,23 +151,23 @@ int Splat_Render() {
 
         glTranslatef(w2, h2, 0.0f); ERRCHECK();
 
-        if (instance.flags & FL_MIRROR_DIAG) {
+        if (instance.flags & SPLAT_MIRROR_DIAG) {
           glRotatef(-90.0f, 0.0f, 0.0f, 1.0f); ERRCHECK();
-          if ((instance.flags & FL_MIRROR_X)) {
+          if ((instance.flags & SPLAT_MIRROR_X)) {
             glScalef(1.0f, -1.0f, 1.0f); ERRCHECK();
           }
-          if ((instance.flags & FL_MIRROR_Y) == 0) {
+          if ((instance.flags & SPLAT_MIRROR_Y) == 0) {
             glScalef(-1.0f, 1.0f, 1.0f); ERRCHECK();
           }
         } else {
-          if (instance.flags & FL_MIRROR_X) {
+          if (instance.flags & SPLAT_MIRROR_X) {
             glScalef(-1.0f, 1.0f, 1.0f); ERRCHECK();
           }
-          if (instance.flags & FL_MIRROR_Y) {
+          if (instance.flags & SPLAT_MIRROR_Y) {
              glScalef(1.0f, -1.0f, 1.0f); ERRCHECK();
           }
         }
-        if (instance.flags & FL_ROTATE) {
+        if (instance.flags & SPLAT_ROTATE) {
           glRotatef(instance.angle, 0.0f, 0.0f, 1.0f); ERRCHECK();
         }
 

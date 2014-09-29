@@ -44,8 +44,8 @@ int Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int flags, int t
   r.width = width;
   memcpy(&r.color, color, sizeof(SDL_Color));
   r.ttl = ttl;
-  r.relative = ((flags & FL_RELATIVE) != 0);
-  r.fill = ((flags & FL_FILLED) != 0);
+  r.relative = ((flags & SPLAT_RELATIVE) != 0);
+  r.fill = ((flags & SPLAT_FILLED) != 0);
 
   return 0;
 }
@@ -65,7 +65,7 @@ int Splat_DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width
   memcpy(&line.color, color, sizeof(SDL_Color));
   line.width = width;
   line.ttl = ttl;
-  line.relative = ((flags & FL_RELATIVE) != 0);
+  line.relative = ((flags & SPLAT_RELATIVE) != 0);
 
   return 0;
 }

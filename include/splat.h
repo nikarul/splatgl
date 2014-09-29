@@ -36,14 +36,24 @@ typedef struct Splat_Image Splat_Image;
 typedef struct Splat_Layer Splat_Layer;
 typedef struct Splat_Instance Splat_Instance;
 typedef struct Splat_Canvas Splat_Canvas;
+typedef struct Splat_Shader Splat_Shader;
+typedef struct Splat_Program Splat_Program;
 
-#define FL_MIRROR_X 0x01
-#define FL_MIRROR_Y 0x02
-#define FL_MIRROR_DIAG 0x04
-#define FL_RELATIVE 0x08
-#define FL_ROTATE 0x10
-#define FL_STATIC 0x20
-#define FL_FILLED 0x20 // Intentionally shadow FL_STATIC, only used by debug rects
+typedef enum {
+  SPLAT_MIRROR_X = 0x0001, // Only applies to images
+  SPLAT_MIRROR_Y = 0x0002, // Only applies to images
+  SPLAT_MIRROR_DIAG = 0x0004, // Only applies to images
+  SPLAT_RELATIVE = 0x0008, // Applies to images, debug rects/lines
+  SPLAT_ROTATE = 0x0010, // Only applies to images
+  SPLAT_STATIC = 0x0020, // Only applies to images
+  SPLAT_FILLED = 0x0020, // Only applies to debug rects
+} Splat_Flags;
+
+typedef enum {
+  SPLAT_VERTEX_SHADER = 0,
+  SPLAT_FRAGMENT_SHADER,
+  SPLAT_GEOMETRY_SHADER,
+} Splat_ShaderType;
 
 #ifdef __cplusplus
 extern "C"
@@ -225,7 +235,7 @@ DECLSPEC int SDLCALL Splat_Render();
  * @param color - Color of rectangle.
  * @param width - Width of the rectangle lines in pixels.
  * @param flags - Flags for rect, only valid flags are
- *      	FL_FILLED, and FL_RELATIVE, rest are ignored.
+ *      	SPLAT_FILLED, and SPLAT_RELATIVE, rest are ignored.
  * @param ttl - Number of milliseconds to render the rectangle.
  *
  * @return 0 if successful, 1 otherwise.
@@ -241,7 +251,7 @@ DECLSPEC int SDLCALL Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width,
  * @param color - Color of the line.
  * @param width - Width of the line in pixels.
  * @param flags - Flags for rect, only valid flag
- *      	is FL_RELATIVE, rest are ignored.
+ *      	is SPLAT_RELATIVE, rest are ignored.
  * @param ttl - Number of milliseconds to render
  *            the line.
  *
@@ -304,10 +314,18 @@ DECLSPEC void SDLCALL Splat_SetError(const char *error);
 #define Splat_ClearError() Splat_SetError(0)
 
 //TODO
-DECLSPEC int SDLCALL Splat_LoadVertexShader(const char *source);
-DECLSPEC int SDLCALL Splat_LoadFragmentShader(const char *source);
-DECLSPEC int SDLCALL Splat_PrepareShaders();
-DECLSPEC int SDLCALL Splat_FinishShaders();
+DECLSPEC Splat_Shader *SDLCALL Splat_CreateShader(const char *source, int shaderType);
+DECLSPEC int SDLCALL Splat_DestroyShader(Splat_Shader *shader);
+
+DECLSPEC Splat_Program *SDLCALL Splat_CreateProgram();
+DECLSPEC int SDLCALL Splat_DestroyProgram(Splat_Program *program);
+DECLSPEC int SDLCALL Splat_AttachShader(Splat_Program *program, Splat_Shader *shader);
+DECLSPEC int SDLCALL Splat_LinkProgram(Splat_Program *program);
+
+DECLSPEC int SDLCALL Splat_SetCanvasProgram(Splat_Canvas *canvas, Splat_Program *program);
+
+DECLSPEC int SDLCALL Splat_SetImageDefaultProgram(Splat_Image *image, Splat_Program *program);
+DECLSPEC int SDLCALL Splat_SetInstanceProgram(Splat_Instance *instance, Splat_Program *program);
 
 #ifdef __cplusplus
 }

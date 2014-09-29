@@ -19,6 +19,7 @@
 
 from ctypes import CDLL, c_char_p, c_uint32, c_int, c_float, Structure, POINTER, byref
 from sdl2 import SDL_Rect, SDL_Point, SDL_Surface, SDL_Window, SDL_Color
+from enum import IntEnum
 
 class error(Exception):
 	def __init__(self):
@@ -70,12 +71,22 @@ class Splat_Instance(Structure):
 class Splat_Canvas(Structure):
 	pass
 
+###TODO REMOVE and replace with Flags enum
 FL_MIRROR_X = 0x01
 FL_MIRROR_Y = 0x02
 FL_MIRROR_DIAG = 0x04
 FL_RELATIVE = 0x08
 FL_ROTATE = 0x10
 FL_STATIC = 0x20
+
+class Flags(IntEnum):
+    MIRROR_X = 0x0001
+    MIRROR_Y = 0x0002
+    MIRROR_DIAG = 0x0004
+    RELATIVE = 0x0008
+    ROTATE = 0x0010
+    STATIC = 0x0020
+    FILLED = 0x0020
 
 prepare = _bind("Splat_Prepare", [POINTER(SDL_Window), c_int, c_int], c_int, _validate_int)
 finish = _bind("Splat_Finish")

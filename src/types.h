@@ -45,7 +45,7 @@ struct Splat_Instance {
   float t1;
   float s2;
   float t2;
-  Splat_Layer* layer;
+  Splat_Layer *layer;
   float angle; /* Rotation angle to apply when renderering this image */
   float scale[2];
   SDL_Color color; /* Color to use when renderering the image. */
@@ -79,6 +79,15 @@ struct Splat_Line {
 	int width;
 	uint32_t ttl;
   bool relative;
+};
+
+struct Splat_Shader {
+  int type;
+  GLuint shader;
+};
+
+struct Splat_Program {
+  GLuint program;
 };
 
 #endif // __SPLAT_TYPES_H__
