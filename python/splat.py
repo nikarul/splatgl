@@ -18,7 +18,7 @@
 # 3. This notice may not be removed or altered from any source distribution.
 
 from ctypes import CDLL, c_char_p, c_uint32, c_int, c_float, Structure, POINTER, byref
-from sdl2 import SDL_Rect, SDL_Point, SDL_Surface, SDL_Window
+from sdl2 import SDL_Rect, SDL_Point, SDL_Surface, SDL_Window, SDL_Color
 
 class error(Exception):
 	def __init__(self):
@@ -101,6 +101,9 @@ destroy_canvas = _bind("Splat_DestroyCanvas", [POINTER(Splat_Canvas)], c_int, _v
 get_active_canvas = _bind("Splat_GetActiveCanvas", None, POINTER(Splat_Canvas), _validate_ptr)
 set_active_canvas = _bind("Splat_SetActiveCanvas", [POINTER(Splat_Canvas)])
 
+draw_rect = _bind("Splat_DrawRect", [POINTER(SDL_Rect), POINTER(SDL_Color), c_int, c_int, c_int], c_int, _validate_int)
+draw_line = _bind("Splat_DrawLine", [POINTER(SDL_Point), POINTER(SDL_Point), POINTER(SDL_Color), c_int, c_int, c_int], c_int, _validate_int)
+
 _get_error = _bind("Splat_GetError", None, c_char_p)
 _set_error = _bind("Splat_SetError", [c_char_p])
 
@@ -122,10 +125,4 @@ def get_image_size(image):
 	y = c_uint32()
 	_get_image_size(image, byref(x), byref(y))
 	return x.value, y.value
-
-def DrawRect(*args):
-    pass ###TODO
-
-def DrawLine(*args):
-    pass ###TODO
 

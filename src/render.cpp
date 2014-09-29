@@ -339,6 +339,12 @@ int Splat_Render() {
     for (auto itPrev = activeCanvas->lines.before_begin(), it = activeCanvas->lines.begin(); it != activeCanvas->lines.end(); /**/) {
       const Splat_Line &line = *it;
       glColor4ub(line.color.r, line.color.g, line.color.b, line.color.a); ERRCHECK();
+
+      if (!line.relative) {
+        // Translate to the active canvas's current location
+        glTranslatef(-activeCanvas->origin.x, -activeCanvas->origin.y, 0.0f); ERRCHECK();
+      }
+
       glLineWidth(line.width); ERRCHECK();
 
       glVertexPointer(2, GL_FLOAT, 0, &line.start.x); ERRCHECK();

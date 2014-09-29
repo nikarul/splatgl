@@ -43,6 +43,7 @@ typedef struct Splat_Canvas Splat_Canvas;
 #define FL_RELATIVE 0x08
 #define FL_ROTATE 0x10
 #define FL_STATIC 0x20
+#define FL_FILLED 0x20 // Intentionally shadow FL_STATIC, only used by debug rects
 
 #ifdef __cplusplus
 extern "C"
@@ -86,6 +87,17 @@ DECLSPEC SDLCALL Splat_Image *Splat_CreateImage(SDL_Surface *surface);
  *  Returns 0 if successful, 1 otherwise.
  */
 DECLSPEC int SDLCALL Splat_DestroyImage(Splat_Image *image);
+
+/**
+ * Retrieves the given images width and height.
+ *
+ * @param image Image to size.
+ * @param width Pointer to uint32_t that will be filled with the image's width.
+ * @param height Pointer to uint32_t that will be filled with the image's width.
+ *
+ * @return 0 if successful, 1 otherwise.
+ */
+DECLSPEC int SDLCALL Splat_GetImageSize(Splat_Image *image, uint32_t *width, uint32_t *height);
 
 /**
  * Create a Splat Layer.
@@ -212,23 +224,13 @@ DECLSPEC int SDLCALL Splat_Render();
  * @param rect - Bounds of the rectangle.
  * @param color - Color of rectangle.
  * @param width - Width of the rectangle lines in pixels.
- * @param ttl - Number of milliseconds to render the rectangle
+ * @param flags - Flags for rect, only valid flags are
+ *      	FL_FILLED, and FL_RELATIVE, rest are ignored.
+ * @param ttl - Number of milliseconds to render the rectangle.
  *
  * @return 0 if successful, 1 otherwise.
  */
 DECLSPEC int SDLCALL Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int flags, int ttl);
-
-/**
- * Draw a filled rectangle.  Intended primarily for debugging.
- * Draws above all normal layers.
- *
- * @param rect - Bounds of the rectangle.
- * @param color - Color of rectangle.
- * @param ttl - Number of milliseconds to render the rectangle
- *
- * @return 0 if successful, 1 otherwise.
- */
-DECLSPEC int SDLCALL Splat_DrawFilledRect(SDL_Rect *rect, SDL_Color *color, int ttl);
 
 /**
  * Draw a line.  Intended primarily for debugging.
@@ -238,11 +240,14 @@ DECLSPEC int SDLCALL Splat_DrawFilledRect(SDL_Rect *rect, SDL_Color *color, int 
  * @param end - Ending position of the line.
  * @param color - Color of the line.
  * @param width - Width of the line in pixels.
- * @param ttl - Number of miliseconds.
+ * @param flags - Flags for rect, only valid flag
+ *      	is FL_RELATIVE, rest are ignored.
+ * @param ttl - Number of milliseconds to render
+ *            the line.
  *
  * @return 0 if successful, 1 otherwise.
  */
-DECLSPEC void SDLCALL Splat_DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width, int ttl);
+DECLSPEC int SDLCALL Splat_DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width, int flags, int ttl);
 
 /**
  * Creates a new canvas to draw on.
@@ -253,21 +258,56 @@ DECLSPEC void SDLCALL Splat_DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color
  * @return DECLSPEC SDLCALL Splat_Canvas*
  */
 DECLSPEC SDLCALL Splat_Canvas *Splat_CreateCanvas();
-DECLSPEC int SDLCALL Splat_DestroyCanvas(Splat_Canvas *context);
-DECLSPEC SDLCALL Splat_Canvas *Splat_GetActiveCanvas();
-DECLSPEC void SDLCALL Splat_SetActiveCanvas(Splat_Canvas *context);
 
+/**
+ * Destroys the given canvas to draw on.  All images, layers,
+ * and instances associated with it will be invalidated and
+ * destroyed.
+ *
+ * @param canvas - Canvas to destroy.
+ *
+ * @return 0 if successful, 1 otherwise.
+ */
+DECLSPEC int SDLCALL Splat_DestroyCanvas(Splat_Canvas *context);
+
+/**
+ * Retrieves the active canvas, if any.
+ *
+ * @return Pointer to the current Splat_Canvas, or NULL if none.
+ */
+DECLSPEC SDLCALL Splat_Canvas *Splat_GetActiveCanvas();
+
+/**
+ * Sets the active canvas.
+ *
+ * @param canvas - Pointer to Splat_Canvas to make active, or NULL to invalidate the active canvas.
+ */
+DECLSPEC void SDLCALL Splat_SetActiveCanvas(Splat_Canvas *canvas);
+
+/**
+ * Retrieve the current error string, if any.
+ *
+ * @return The current error string, or NULL if no error has occurred.
+ */
+DECLSPEC const char *SDLCALL Splat_GetError();
+
+/**
+ * Sets the current error string
+ *
+ * @param error - The error string to set, or NULL to clear the error string.
+ */
+DECLSPEC void SDLCALL Splat_SetError(const char *error);
+
+/**
+ * Convenience macro to clear the current Splat error string
+ */
+#define Splat_ClearError() Splat_SetError(0)
+
+//TODO
 DECLSPEC int SDLCALL Splat_LoadVertexShader(const char *source);
 DECLSPEC int SDLCALL Splat_LoadFragmentShader(const char *source);
 DECLSPEC int SDLCALL Splat_PrepareShaders();
 DECLSPEC int SDLCALL Splat_FinishShaders();
-
-DECLSPEC const char *SDLCALL Splat_GetError();
-DECLSPEC void SDLCALL Splat_SetError(const char *error);
-
-#define Splat_ClearError() Splat_SetError(0)
-
-DECLSPEC int SDLCALL Splat_GetImageSize(Splat_Image *image, uint32_t *width, uint32_t *height);
 
 #ifdef __cplusplus
 }

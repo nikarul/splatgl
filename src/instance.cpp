@@ -35,7 +35,7 @@ Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int
 	return nullptr;
   }
 
-  // ALlocate the surface for this context
+  // Allocate the surface for this context
   layer->instances.emplace_front();
   Splat_Instance &instance(layer->instances.front());
 

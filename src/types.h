@@ -22,6 +22,7 @@
 #ifndef __SPLAT_TYPES_H__
 #define __SPLAT_TYPES_H__
 
+#include <SDL_opengl.h>
 #include <forward_list>
 #include <SDL.h>
 
@@ -77,6 +78,7 @@ struct Splat_Line {
 	SDL_Color color;
 	int width;
 	uint32_t ttl;
+  bool relative;
 };
 
 #endif // __SPLAT_TYPES_H__
