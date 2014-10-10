@@ -28,16 +28,15 @@
 
 extern "C" {
 
-Splat_Layer *Splat_CreateLayer() {
-  // Ensure we have a valid canvas
-  if (!activeCanvas) {
-	Splat_SetError("No active canvas");
+Splat_Layer *Splat_CreateLayer(Splat_Canvas *canvas) {
+  if (!canvas) {
+	Splat_SetError("Splat_CreateLayer:  Invalid argument.");
 	return nullptr;
   }
 
   // ALlocate the surface for this context
-  activeCanvas->layers.emplace_back();
-  Splat_Layer &layer(activeCanvas->layers.back());
+  canvas->layers.emplace_back();
+  Splat_Layer &layer(canvas->layers.back());
 
   //TODO init layer
 
@@ -45,13 +44,12 @@ Splat_Layer *Splat_CreateLayer() {
 }
 
 int Splat_DestroyLayer(Splat_Layer *layer) {
-  // Ensure we have a valid canvas
-  if (!activeCanvas) {
-	Splat_SetError("No active canvas");
+  if (!layer) {
+	Splat_SetError("Splat_DestroyLayer:  Invalid argument.");
 	return -1;
   }
 
-  list<Splat_Layer> &layers = activeCanvas->layers;
+  list<Splat_Layer> &layers = layer->canvas->layers;
   for (auto it = layers.begin(), end = layers.end(); it != end; ++it) {
 	if (&(*it) == layer) {
 	  layers.erase(it);
@@ -59,30 +57,30 @@ int Splat_DestroyLayer(Splat_Layer *layer) {
 	}
   }
 
-  Splat_SetError("Layer not found");
+  Splat_SetError("Splat_DestroyLayer:  Layer not found in canvas layers list.");
   return -1;
 }
 
 int Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other) {
-  // Ensure we have a valid canvas
-  if (!activeCanvas) {
-	Splat_SetError("No active canvas");
+  if (!layer || !other) {
+	Splat_SetError("Splat_MoveLayer:  Invalid argument.");
 	return -1;
   }
 
-  if (activeCanvas->layers.empty()) {
-	Splat_SetError("No layers in active canvas");
+  if (layer->canvas != other->canvas) {
+	Splat_SetError("Splat_MoveLayer:  Layers do not belong to the same canvas.");
 	return -1;
   }
 
-  auto itLeft = find(activeCanvas->layers.begin(), activeCanvas->layers.end(), *layer);
-  if (itLeft == activeCanvas->layers.end()) {
+  Splat_Canvas *canvas = layer->canvas;
+  auto itLeft = find(canvas->layers.begin(), canvas->layers.end(), *layer);
+  if (itLeft == canvas->layers.end()) {
 	Splat_SetError("Splat_MoveError:  Layer not found in active canvas.");
 	return -1;
   }
 
-  auto itRight = (other) ? find(activeCanvas->layers.begin(), activeCanvas->layers.end(), *other) : activeCanvas->layers.begin();
-  if (itRight == activeCanvas->layers.end()) {
+  auto itRight = (other) ? find(canvas->layers.begin(), canvas->layers.end(), *other) : canvas->layers.begin();
+  if (itRight == canvas->layers.end()) {
 	Splat_SetError("Splat_MoveError:  'Other' layer not found in active canvas.");
 	return -1;
   }

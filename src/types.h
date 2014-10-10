@@ -57,6 +57,7 @@ struct Splat_Instance {
 struct Splat_Layer {
   bool operator==(const Splat_Layer &other) { return this == &other; }
 
+  Splat_Canvas *canvas;
   forward_list<Splat_Instance> instances;
 };
 

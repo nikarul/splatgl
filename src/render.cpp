@@ -62,7 +62,12 @@ static float texcoord_buffer[12]; /* TexCoord buffer */
 extern "C"
 {
 
-int Splat_Render() {
+int Splat_Render(Splat_Canvas *canvas) {
+  if (!canvas) {
+    Splat_SetError("Splat_Render:  Invalid argument.");
+    return -1;
+  }
+
   int winwidth, winheight;
   SDL_Rect scaledRect;
 
@@ -91,15 +96,15 @@ int Splat_Render() {
   glEnable(GL_BLEND); ERRCHECK();
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); ERRCHECK();
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, activeCanvas->blending); ERRCHECK();
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, activeCanvas->blending); ERRCHECK();
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, canvas->blending); ERRCHECK();
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, canvas->blending); ERRCHECK();
 
   // Save the current matrix
   glPushMatrix(); ERRCHECK();
 
   // Scale as necessary
-  glScalef(activeCanvas->scale[0], activeCanvas->scale[1], 1.0f); ERRCHECK();
-  bool scaledCanvas = !(activeCanvas->scale[0] == 1.0f && activeCanvas->scale[1] == 1.0f);
+  glScalef(canvas->scale[0], canvas->scale[1], 1.0f); ERRCHECK();
+  bool scaledCanvas = !(canvas->scale[0] == 1.0f && canvas->scale[1] == 1.0f);
 
   // Specify vertex and tex coord buffers
   glVertexPointer(3, GL_FLOAT, 0, vertex_buffer); ERRCHECK();
@@ -108,13 +113,13 @@ int Splat_Render() {
   glEnableClientState(GL_TEXTURE_COORD_ARRAY); ERRCHECK();
 
   SDL_Rect viewRect;
-  viewRect.x = activeCanvas->origin.x;
-  viewRect.y = activeCanvas->origin.y;
+  viewRect.x = canvas->origin.x;
+  viewRect.y = canvas->origin.y;
   viewRect.w = viewportWidth;
   viewRect.h = viewportHeight;
 
   float depth = 0.0f;
-  for (Splat_Layer &layer : activeCanvas->layers) {
+  for (Splat_Layer &layer : canvas->layers) {
     for (Splat_Instance &instance : layer.instances) {
       //TODO do this once per texture
       // Bind our texture
@@ -129,7 +134,7 @@ int Splat_Render() {
 
       // If relative, translate to the active canvas' current location
       if (instance.flags & SPLAT_RELATIVE) {
-        glTranslatef(-activeCanvas->origin.x, -activeCanvas->origin.y, 0.0f); ERRCHECK();
+        glTranslatef(-canvas->origin.x, -canvas->origin.y, 0.0f); ERRCHECK();
       }
 
       // Translate to the images current location
@@ -181,7 +186,7 @@ int Splat_Render() {
 
         // Snip, snip, snip...
         if (scaledCanvas) {
-          glScissor(instance.clip.x * activeCanvas->scale[0], winheight - ((instance.clip.y + instance.clip.h) * activeCanvas->scale[1]), instance.clip.w * activeCanvas->scale[0], instance.clip.h * activeCanvas->scale[1]); ERRCHECK();
+          glScissor(instance.clip.x * canvas->scale[0], winheight - ((instance.clip.y + instance.clip.h) * canvas->scale[1]), instance.clip.w * canvas->scale[0], instance.clip.h * canvas->scale[1]); ERRCHECK();
         } else {
           glScissor(instance.clip.x, winheight - (instance.clip.y + instance.clip.h), instance.clip.w, instance.clip.h); ERRCHECK();
         }
@@ -258,13 +263,13 @@ int Splat_Render() {
   uint32_t time = SDL_GetTicks();
 
   // Draw rects
-  if (!activeCanvas->rects.empty()) {
+  if (!canvas->rects.empty()) {
     glDisable(GL_TEXTURE_2D); ERRCHECK();
     glEnableClientState(GL_VERTEX_ARRAY); ERRCHECK();
     glDisableClientState(GL_TEXTURE_COORD_ARRAY); ERRCHECK();
     glVertexPointer(2, GL_FLOAT, 0, &vertex_buffer); ERRCHECK();
 
-    for (auto itPrev = activeCanvas->rects.before_begin(), it = activeCanvas->rects.begin(); it != activeCanvas->rects.end(); /**/) {
+    for (auto itPrev = canvas->rects.before_begin(), it = canvas->rects.begin(); it != canvas->rects.end(); /**/) {
       const Splat_Rect& rect = *it;
       glColor4ub(rect.color.r, rect.color.g, rect.color.b, rect.color.a); ERRCHECK();
 
@@ -273,7 +278,7 @@ int Splat_Render() {
 
       if (!rect.relative) {
         // Translate to the active canvas's current location
-        glTranslatef(-activeCanvas->origin.x, -activeCanvas->origin.y, 0.0f); ERRCHECK();
+        glTranslatef(-canvas->origin.x, -canvas->origin.y, 0.0f); ERRCHECK();
       }
 
       glLineWidth(rect.width); ERRCHECK();
@@ -324,7 +329,7 @@ int Splat_Render() {
 
       // Expire old rects
       if (time >= rect.ttl) {
-        it = activeCanvas->rects.erase_after(itPrev);
+        it = canvas->rects.erase_after(itPrev);
       } else {
         itPrev = it;
         ++it;
@@ -332,17 +337,17 @@ int Splat_Render() {
     }
   }
 
-  if (!activeCanvas->lines.empty()) {
+  if (!canvas->lines.empty()) {
     glDisable(GL_TEXTURE_2D); ERRCHECK();
     glEnableClientState(GL_VERTEX_ARRAY); ERRCHECK();
     glDisableClientState(GL_TEXTURE_COORD_ARRAY); ERRCHECK();
-    for (auto itPrev = activeCanvas->lines.before_begin(), it = activeCanvas->lines.begin(); it != activeCanvas->lines.end(); /**/) {
+    for (auto itPrev = canvas->lines.before_begin(), it = canvas->lines.begin(); it != canvas->lines.end(); /**/) {
       const Splat_Line &line = *it;
       glColor4ub(line.color.r, line.color.g, line.color.b, line.color.a); ERRCHECK();
 
       if (!line.relative) {
         // Translate to the active canvas's current location
-        glTranslatef(-activeCanvas->origin.x, -activeCanvas->origin.y, 0.0f); ERRCHECK();
+        glTranslatef(-canvas->origin.x, -canvas->origin.y, 0.0f); ERRCHECK();
       }
 
       glLineWidth(line.width); ERRCHECK();
@@ -354,7 +359,7 @@ int Splat_Render() {
 
       // Expire old lines
       if (time >= line.ttl) {
-        it = activeCanvas->lines.erase_after(itPrev);
+        it = canvas->lines.erase_after(itPrev);
       } else {
         itPrev = it;
         ++it;

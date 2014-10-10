@@ -26,15 +26,15 @@
 extern "C"
 {
 
-int Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int flags, int ttl) {
-  if (!activeCanvas) {
-    Splat_SetError("No active canvas.");
+int Splat_DrawRect(Splat_Canvas *canvas, SDL_Rect *rect, SDL_Color *color, int width, int flags, int ttl) {
+  if (!canvas || !rect || !color) {
+    Splat_SetError("Invalid argument");
     return -1;
   }
 
   // Allocate the surface for this context
-  activeCanvas->rects.emplace_front();
-  Splat_Rect &r(activeCanvas->rects.front());
+  canvas->rects.emplace_front();
+  Splat_Rect &r(canvas->rects.front());
 
   r.x1 = rect->x;
   r.x2 = rect->x + rect->w;
@@ -50,15 +50,15 @@ int Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int flags, int t
   return 0;
 }
 
-int Splat_DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width, int flags, int ttl) {
-  if (!activeCanvas) {
-    Splat_SetError("No active canvas.");
+int Splat_DrawLine(Splat_Canvas *canvas, SDL_Point *start, SDL_Point *end, SDL_Color *color, int width, int flags, int ttl) {
+  if (!canvas || !start || !end || !color) {
+    Splat_SetError("Invalid argument");
     return -1;
   }
 
   // Allocate the surface for this context
-  activeCanvas->lines.emplace_front();
-  Splat_Line &line(activeCanvas->lines.front());
+  canvas->lines.emplace_front();
+  Splat_Line &line(canvas->lines.front());
 
   memcpy(&line.start, start, sizeof(SDL_Point));
   memcpy(&line.end, end, sizeof(SDL_Point));

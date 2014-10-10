@@ -24,20 +24,20 @@
 #include <SDL_opengl.h>
 #include "splat.h"
 #include "types.h"
-#include "canvas.h"
+
+static forward_list<Splat_Image> images;
 
 extern "C" {
 
 Splat_Image *Splat_CreateImage(SDL_Surface *surface) {
-  // Ensure we have a valid canvas
-  if (!activeCanvas) {
-	Splat_SetError("No active canvas");
+  if (!surface) {
+	Splat_SetError("Splat_CreateImage:  Invalid argument.");
 	return nullptr;
   }
 
   // ALlocate the surface for this context
-  activeCanvas->images.emplace_front();
-  Splat_Image &image(activeCanvas->images.front());
+  images.emplace_front();
+  Splat_Image &image(images.front());
 
   // Get the number of channels in the SDL surface
   GLenum format;
@@ -94,13 +94,6 @@ Splat_Image *Splat_CreateImage(SDL_Surface *surface) {
 }
 
 int Splat_DestroyImage(Splat_Image *image) {
-  // Ensure we have a valid canvas
-  if (!activeCanvas) {
-	Splat_SetError("No active canvas");
-	return -1;
-  }
-
-  forward_list<Splat_Image> &images = activeCanvas->images;
   for (auto prev = images.before_begin(), it = images.begin(), end = images.end(); it != end; prev = it, ++it) {
 	if (&(*it) == image) {
 	  images.erase_after(prev);
@@ -108,7 +101,7 @@ int Splat_DestroyImage(Splat_Image *image) {
 	}
   }
 
-  Splat_SetError("Image not found");
+  Splat_SetError("Splat_DestroyImage:  Image not found.");
   return -1;
 }
 
@@ -117,7 +110,6 @@ int Splat_GetImageSize(Splat_Image *image, uint32_t *width, uint32_t *height) {
   *height = image->height;
   return 0;
 }
-
 
 } // extern "C"
 

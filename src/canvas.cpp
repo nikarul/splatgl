@@ -25,11 +25,13 @@
 #include "canvas.h"
 
 static forward_list<Splat_Canvas> canvases;
-Splat_Canvas *activeCanvas = nullptr;
 
 void CanvasFinish() {
   canvases.clear();
-  activeCanvas = nullptr;
+}
+
+static inline float clamp(float value, float lower, float upper) {
+  return min(upper, min(lower, value));
 }
 
 extern "C"
@@ -64,87 +66,64 @@ int Splat_DestroyCanvas(Splat_Canvas *canvas) {
   return -1;
 }
 
-Splat_Canvas *Splat_GetActiveCanvas() {
-	return activeCanvas;
-}
-
-void Splat_SetActiveCanvas(Splat_Canvas *canvas) {
-	activeCanvas = canvas;
-}
-
-int Splat_SetClearColor(float r, float b, float g, float a) {
-  if (!activeCanvas) {
-	Splat_SetError("Splat_SetClearColor:  No active canvas.");
+int Splat_SetClearColor(Splat_Canvas *canvas, float r, float b, float g, float a) {
+  if (!canvas) {
+	Splat_SetError("Splat_SetClearColor:  Invalid canvas.");
 	return -1;
   }
 
-  activeCanvas->clearColor[0] = r;
-  activeCanvas->clearColor[1] = g;
-  activeCanvas->clearColor[2] = b;
-  activeCanvas->clearColor[3] = a;
+  canvas->clearColor[0] = clamp(r, 0.0f, 1.0f);
+  canvas->clearColor[1] = clamp(g, 0.0f, 1.0f);
+  canvas->clearColor[2] = clamp(b, 0.0f, 1.0f);
+  canvas->clearColor[3] = clamp(a, 0.0f, 1.0f);
 
   return 0;
 }
 
-int Splat_GetViewPosition(SDL_Point *position) {
-  if (!position) {
-	Splat_SetError("Splat_GetViewPosition:  Invalid argument.");
+int Splat_GetViewPosition(Splat_Canvas *canvas, SDL_Point *position) {
+  if (!canvas || !position) {
+	Splat_SetError("Splat_GetViewPosition:  Invalid argument");
 	return -1;
   }
 
-  if (!activeCanvas) {
-	Splat_SetError("Splat_GetViewPosition:  No active canvas.");
-	return -1;
-  }
-
-  position->x = activeCanvas->origin.x;
-  position->y = activeCanvas->origin.y;
+  position->x = canvas->origin.x;
+  position->y = canvas->origin.y;
 
   return 0;
 }
 
-int Splat_SetViewPosition(SDL_Point *position) {
-  if (!position) {
+int Splat_SetViewPosition(Splat_Canvas *canvas, SDL_Point *position) {
+  if (!canvas || !position) {
 	Splat_SetError("Splat_SetViewPosition:  Invalid argument.");
 	return -1;
   }
 
-  if (!activeCanvas) {
-	Splat_SetError("Splat_SetViewPosition:  No active canvas.");
-	return -1;
-  }
-
-  activeCanvas->origin.x = position->x;
-  activeCanvas->origin.y = position->y;
+  canvas->origin.x = position->x;
+  canvas->origin.y = position->y;
 
   return 0;
 }
 
-DECLSPEC int SDLCALL Splat_GetScale(float *x, float *y) {
-  if (!x || !y) {
+DECLSPEC int SDLCALL Splat_GetScale(Splat_Canvas *canvas, float *x, float *y) {
+  if (!canvas || !x || !y) {
 	Splat_SetError("Splat_SetViewPosition:  Invalid argument.");
 	return -1;
   }
 
-  if (!activeCanvas) {
-	Splat_SetError("Splat_SetViewPosition:  No active canvas.");
-	return -1;
-  }
-
-  *x = activeCanvas->scale[0];
-  *y = activeCanvas->scale[1];
+  *x = canvas->scale[0];
+  *y = canvas->scale[1];
 
   return 0;
 }
 
-int Splat_SetScale(float x, float y) {
-  if (!activeCanvas) {
+int Splat_SetScale(Splat_Canvas *canvas, float x, float y) {
+  if (!canvas) {
 	Splat_SetError("Splat_SetViewPosition:  No active canvas.");
 	return -1;
   }
 
-  activeCanvas->scale[0] = x;
-  activeCanvas->scale[1] = y;
+  canvas->scale[0] = max(x, 0.0f);
+  canvas->scale[1] = max(y, 1.0f);
 
   return 0;
 }

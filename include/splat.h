@@ -117,9 +117,11 @@ DECLSPEC int SDLCALL Splat_GetImageSize(Splat_Image *image, uint32_t *width, uin
  * The new layer will be placed at the bottom of the stack of layers, but
  * this can be rearranged with Splat_MoveLayer().
  *
+ * @param canvas Canvas in which to create layer
+ *
  * Returns a pointer to a new Splat_Layer if successfull, NULL otherwise.
  */
-DECLSPEC SDLCALL Splat_Layer *Splat_CreateLayer();
+DECLSPEC SDLCALL Splat_Layer *Splat_CreateLayer(Splat_Canvas *canvas);
 
 /**
  * Destroys a Splat Layer and any associated resources.
@@ -189,20 +191,20 @@ DECLSPEC int SDLCALL Splat_SetInstanceImage(Splat_Instance *instance, Splat_Imag
  *
  * Returns 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_SetClearColor(float r, float g, float b, float a);
+DECLSPEC int SDLCALL Splat_SetClearColor(Splat_Canvas *canvas, float r, float g, float b, float a);
 
 /**
  * Returns the renderer viewport origin, or NULL if an error
  * occurs.
  */
-DECLSPEC int SDLCALL Splat_GetViewPosition(SDL_Point *position);
+DECLSPEC int SDLCALL Splat_GetViewPosition(Splat_Canvas *canvas, SDL_Point *position);
 
 /**
  * Sets the renderer viewport origin.
  *
  * Returns 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_SetViewPosition(SDL_Point *position);
+DECLSPEC int SDLCALL Splat_SetViewPosition(Splat_Canvas *canvas, SDL_Point *position);
 
 /**
  * Retrieves the scaling factors for the renderer.
@@ -211,21 +213,21 @@ DECLSPEC int SDLCALL Splat_SetViewPosition(SDL_Point *position);
  * are filled with the scaling factors.  Otherwise, the fields
  * are unmodified and returns 1.
  */
-DECLSPEC int SDLCALL Splat_GetScale(float *x, float *y);
+DECLSPEC int SDLCALL Splat_GetScale(Splat_Canvas *canvas, float *x, float *y);
 
 /**
  * Set the scaling factors to the specified values.
  *
  * Returns 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_SetScale(float x, float y);
+DECLSPEC int SDLCALL Splat_SetScale(Splat_Canvas *canvas, float x, float y);
 
 /**
  * Render the scene.
  *
  * Returns 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_Render();
+DECLSPEC int SDLCALL Splat_Render(Splat_Canvas *canvas);
 
 /**
  * Draw a rectangle outline.  Intended primarily for debugging.
@@ -240,7 +242,7 @@ DECLSPEC int SDLCALL Splat_Render();
  *
  * @return 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width, int flags, int ttl);
+DECLSPEC int SDLCALL Splat_DrawRect(Splat_Canvas *canvas, SDL_Rect *rect, SDL_Color *color, int width, int flags, int ttl);
 
 /**
  * Draw a line.  Intended primarily for debugging.
@@ -257,7 +259,7 @@ DECLSPEC int SDLCALL Splat_DrawRect(SDL_Rect *rect, SDL_Color *color, int width,
  *
  * @return 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_DrawLine(SDL_Point *start, SDL_Point *end, SDL_Color *color, int width, int flags, int ttl);
+DECLSPEC int SDLCALL Splat_DrawLine(Splat_Canvas *canvas, SDL_Point *start, SDL_Point *end, SDL_Color *color, int width, int flags, int ttl);
 
 /**
  * Creates a new canvas to draw on.
@@ -278,21 +280,7 @@ DECLSPEC SDLCALL Splat_Canvas *Splat_CreateCanvas();
  *
  * @return 0 if successful, 1 otherwise.
  */
-DECLSPEC int SDLCALL Splat_DestroyCanvas(Splat_Canvas *context);
-
-/**
- * Retrieves the active canvas, if any.
- *
- * @return Pointer to the current Splat_Canvas, or NULL if none.
- */
-DECLSPEC SDLCALL Splat_Canvas *Splat_GetActiveCanvas();
-
-/**
- * Sets the active canvas.
- *
- * @param canvas - Pointer to Splat_Canvas to make active, or NULL to invalidate the active canvas.
- */
-DECLSPEC void SDLCALL Splat_SetActiveCanvas(Splat_Canvas *canvas);
+DECLSPEC int SDLCALL Splat_DestroyCanvas(Splat_Canvas *canvas);
 
 /**
  * Retrieve the current error string, if any.
@@ -314,18 +302,18 @@ DECLSPEC void SDLCALL Splat_SetError(const char *error);
 #define Splat_ClearError() Splat_SetError(0)
 
 //TODO
-DECLSPEC Splat_Shader *SDLCALL Splat_CreateShader(const char *source, int shaderType);
-DECLSPEC int SDLCALL Splat_DestroyShader(Splat_Shader *shader);
-
-DECLSPEC Splat_Program *SDLCALL Splat_CreateProgram();
-DECLSPEC int SDLCALL Splat_DestroyProgram(Splat_Program *program);
-DECLSPEC int SDLCALL Splat_AttachShader(Splat_Program *program, Splat_Shader *shader);
-DECLSPEC int SDLCALL Splat_LinkProgram(Splat_Program *program);
-
-DECLSPEC int SDLCALL Splat_SetCanvasProgram(Splat_Canvas *canvas, Splat_Program *program);
-
-DECLSPEC int SDLCALL Splat_SetImageDefaultProgram(Splat_Image *image, Splat_Program *program);
-DECLSPEC int SDLCALL Splat_SetInstanceProgram(Splat_Instance *instance, Splat_Program *program);
+//DECLSPEC Splat_Shader *SDLCALL Splat_CreateShader(const char *source, int shaderType);
+//DECLSPEC int SDLCALL Splat_DestroyShader(Splat_Shader *shader);
+//
+//DECLSPEC Splat_Program *SDLCALL Splat_CreateProgram();
+//DECLSPEC int SDLCALL Splat_DestroyProgram(Splat_Program *program);
+//DECLSPEC int SDLCALL Splat_AttachShader(Splat_Program *program, Splat_Shader *shader);
+//DECLSPEC int SDLCALL Splat_LinkProgram(Splat_Program *program);
+//
+//DECLSPEC int SDLCALL Splat_SetCanvasProgram(Splat_Canvas *canvas, Splat_Program *program);
+//
+//DECLSPEC int SDLCALL Splat_SetImageDefaultProgram(Splat_Image *image, Splat_Program *program);
+//DECLSPEC int SDLCALL Splat_SetInstanceProgram(Splat_Instance *instance, Splat_Program *program);
 
 #ifdef __cplusplus
 }

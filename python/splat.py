@@ -71,14 +71,6 @@ class Splat_Instance(Structure):
 class Splat_Canvas(Structure):
 	pass
 
-###TODO REMOVE and replace with Flags enum
-FL_MIRROR_X = 0x01
-FL_MIRROR_Y = 0x02
-FL_MIRROR_DIAG = 0x04
-FL_RELATIVE = 0x08
-FL_ROTATE = 0x10
-FL_STATIC = 0x20
-
 class Flags(IntEnum):
     MIRROR_X = 0x0001
     MIRROR_Y = 0x0002
@@ -92,7 +84,7 @@ prepare = _bind("Splat_Prepare", [POINTER(SDL_Window), c_int, c_int], c_int, _va
 finish = _bind("Splat_Finish")
 create_image = _bind("Splat_CreateImage", [POINTER(SDL_Surface)], POINTER(Splat_Image), _validate_ptr)
 destroy_image = _bind("Splat_DestroyImage", [POINTER(Splat_Image)], c_int, _validate_int)
-create_layer = _bind("Splat_CreateLayer", None, POINTER(Splat_Layer), _validate_ptr)
+create_layer = _bind("Splat_CreateLayer", [POINTER(Splat_Canvas)], POINTER(Splat_Layer), _validate_ptr)
 destroy_layer = _bind("Splat_DestroyLayer", [POINTER(Splat_Layer)], c_int, _validate_int)
 move_layer = _bind("Splat_MoveLayer", [POINTER(Splat_Layer)], c_int, _validate_int)
 create_instance = _bind("Splat_CreateInstance", [POINTER(Splat_Image), POINTER(Splat_Layer), c_int, c_int, c_float, c_float, c_float, c_float, c_uint32], POINTER(Splat_Instance), _validate_ptr)
@@ -100,35 +92,33 @@ destroy_instance = _bind("Splat_DestroyInstance", [POINTER(Splat_Instance)], c_i
 set_instance_position = _bind("Splat_SetInstancePosition", [POINTER(Splat_Instance), c_int, c_int], c_int, _validate_int)
 set_instance_layer = _bind("Splat_SetInstanceLayer", [POINTER(Splat_Instance), POINTER(Splat_Layer)], c_int, _validate_int)
 set_instance_image = _bind("Splat_SetInstanceImage", [POINTER(Splat_Instance), POINTER(Splat_Image), c_float, c_float, c_float, c_float], c_int, _validate_int)
-set_clear_color = _bind("Splat_SetClearColor", [c_float, c_float, c_float, c_float], c_int, _validate_int)
-_get_view_position = _bind("Splat_GetViewPosition", [POINTER(SDL_Point)], c_int, _validate_int)
-set_view_position =  _bind("Splat_SetViewPosition", [POINTER(SDL_Point)], c_int, _validate_int)
-_get_scale = _bind("Splat_GetScale", [POINTER(c_float), POINTER(c_float)], c_int, _validate_int)
-set_scale = _bind("Splat_SetScale", [c_float, c_float], c_int, _validate_int)
-render = _bind("Splat_Render", None, c_int, _validate_int)
+set_clear_color = _bind("Splat_SetClearColor", [POINTER(Splat_Canvas), c_float, c_float, c_float, c_float], c_int, _validate_int)
+_get_view_position = _bind("Splat_GetViewPosition", [POINTER(Splat_Canvas), POINTER(SDL_Point)], c_int, _validate_int)
+set_view_position =  _bind("Splat_SetViewPosition", [POINTER(Splat_Canvas), POINTER(SDL_Point)], c_int, _validate_int)
+_get_scale = _bind("Splat_GetScale", [POINTER(Splat_Canvas), POINTER(c_float), POINTER(c_float)], c_int, _validate_int)
+set_scale = _bind("Splat_SetScale", [POINTER(Splat_Canvas), c_float, c_float], c_int, _validate_int)
+render = _bind("Splat_Render", [POINTER(Splat_Canvas)], c_int, _validate_int)
 
 create_canvas = _bind("Splat_CreateCanvas", None, POINTER(Splat_Canvas), _validate_ptr)
 destroy_canvas = _bind("Splat_DestroyCanvas", [POINTER(Splat_Canvas)], c_int, _validate_int)
-get_active_canvas = _bind("Splat_GetActiveCanvas", None, POINTER(Splat_Canvas), _validate_ptr)
-set_active_canvas = _bind("Splat_SetActiveCanvas", [POINTER(Splat_Canvas)])
 
-draw_rect = _bind("Splat_DrawRect", [POINTER(SDL_Rect), POINTER(SDL_Color), c_int, c_int, c_int], c_int, _validate_int)
-draw_line = _bind("Splat_DrawLine", [POINTER(SDL_Point), POINTER(SDL_Point), POINTER(SDL_Color), c_int, c_int, c_int], c_int, _validate_int)
+draw_rect = _bind("Splat_DrawRect", [POINTER(Splat_Canvas), POINTER(SDL_Rect), POINTER(SDL_Color), c_int, c_int, c_int], c_int, _validate_int)
+draw_line = _bind("Splat_DrawLine", [POINTER(Splat_Canvas), POINTER(SDL_Point), POINTER(SDL_Point), POINTER(SDL_Color), c_int, c_int, c_int], c_int, _validate_int)
 
 _get_error = _bind("Splat_GetError", None, c_char_p)
 _set_error = _bind("Splat_SetError", [c_char_p])
 
 _get_image_size = _bind("Splat_GetImageSize", [POINTER(Splat_Image), POINTER(c_uint32), POINTER(c_uint32)], c_int, _validate_int)
 
-def get_view_position():
+def get_view_position(canvas):
 	pt = SDL_Point()
-	_get_view_position(byref(pt))
+	_get_view_position(canvas, byref(pt))
 	return pt
 
-def get_scale():
+def get_scale(canvas):
 	x = c_float()
 	y = c_float()
-	_get_scale(byref(x), byref(y))
+	_get_scale(canvas, byref(x), byref(y))
 	return x.value, y.value
 
 def get_image_size(image):

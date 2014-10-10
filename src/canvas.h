@@ -36,14 +36,11 @@ struct Splat_Canvas {
   float clearColor[4];
   SDL_Point origin;
   float scale[2]; // Scale factors for X and Y
-  forward_list<Splat_Image> images;
   list<Splat_Layer> layers;
   forward_list<Splat_Rect> rects; // List of debug rects
   forward_list<Splat_Line> lines; // List of debug lines
   int blending;
 };
-
-extern Splat_Canvas *activeCanvas;
 
 void CanvasFinish();
 
