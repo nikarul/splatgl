@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include <assert.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include "splat.h"
@@ -41,11 +42,21 @@ Splat_Layer *Splat_CreateLayer(Splat_Canvas *canvas) {
     return NULL;
   }
 
-  // Place new image at the top of the list.
   layer->canvas = canvas;
   layer->instances = NULL;
-  layer->next = canvas->layers;
-  canvas->layers = layer;
+  layer->next = NULL;
+
+  // Place new layer at the bottom of the list.
+  if (canvas->layers) {
+    Splat_Layer *parent = canvas->layers;
+    while (parent->next) {
+      parent = parent->next;
+    }
+    parent->next = layer;
+  }
+  else {
+    canvas->layers = layer;
+  }
 
   return layer;
 }
@@ -56,12 +67,12 @@ int Splat_DestroyLayer(Splat_Layer *layer) {
     return -1;
   }
 
-  for (Splat_Layer *prev = NULL, *curr = layers; curr != NULL; prev = curr, curr = curr->next) {
+  for (Splat_Layer *prev = NULL, *curr = layer->canvas->layers; curr != NULL; prev = curr, curr = curr->next) {
     if (curr == layer) {
       if (prev) {
         prev->next = curr->next;
       } else {
-        layers = curr->next;
+        layer->canvas->layers = curr->next;
       }
 
       free(layer);
@@ -102,7 +113,7 @@ int Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other) {
   }
 
   if (found != 3) {
-    Splat_Error("Splat_MoveLayer:  One or both layers were not found in the canvas");
+    Splat_SetError("Splat_MoveLayer:  One or both layers were not found in the canvas");
     return -1;
   }
 
@@ -114,13 +125,13 @@ int Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other) {
   if (layerPrev) {
     layerPrev->next = other;
   } else {
-    canvas->layers = other;
+    layer->canvas->layers = other;
   }
 
   if (otherPrev) {
     otherPrev->next = layer;
   } else {
-    canvas->layers = layer;
+    layer->canvas->layers = layer;
   }
 
   return 0;

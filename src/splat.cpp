@@ -54,7 +54,7 @@ int Splat_Prepare(SDL_Window *userWindow, int userViewportWidth, int userViewpor
 
   window_glcontext = SDL_GL_CreateContext(window);
   if (!window_glcontext) {
-    Splat_SetError("OpenGL context creation failed.  Check glGetError() and/or SDL_GetError() for more information.")
+    Splat_SetError("OpenGL context creation failed.  Check glGetError() and/or SDL_GetError() for more information.");
     Splat_Finish();
     return -1;
   }

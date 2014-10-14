@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include <math.h>
 #include <SDL_opengl.h>
 #include "splat.h"
 #include "canvas.h"
@@ -27,12 +28,12 @@ static Splat_Canvas *canvases = NULL;
 
 void CanvasFinish() {
   while (canvases) {
-    Splat_Destroy_Canvas(canvases);
+    Splat_DestroyCanvas(canvases);
   }
 }
 
 static inline float clamp(float value, float lower, float upper) {
-  return min(upper, min(lower, value));
+  return fminf(upper, fmaxf(lower, value));
 }
 
 extern "C"
@@ -40,11 +41,12 @@ extern "C"
 
 Splat_Canvas *Splat_CreateCanvas() {
   // Allocate the surface for this context
-  Splat_Image *canvas = malloc(sizeof(Splat_Canvas));
+  Splat_Canvas *canvas = malloc(sizeof(Splat_Canvas));
   if (!canvas) {
     Splat_SetError("Splat_CreateCanvas:  Allocation failed.");
     return NULL;
   }
+  memset(canvas, 0, sizeof(Splat_Canvas));
 
   // Place new image at the top of the list.
   canvas->next = canvases;
@@ -69,7 +71,7 @@ int Splat_DestroyCanvas(Splat_Canvas *canvas) {
       if (prev) {
         prev->next = curr->next;
       } else {
-        canvass = curr->next;
+        canvases = curr->next;
       }
 
       free(canvas);
@@ -137,8 +139,8 @@ int Splat_SetScale(Splat_Canvas *canvas, float x, float y) {
     return -1;
   }
 
-  canvas->scale[0] = max(x, 0.0f);
-  canvas->scale[1] = max(y, 1.0f);
+  canvas->scale[0] = fmaxf(x, 0.0f);
+  canvas->scale[1] = fmaxf(y, 1.0f);
 
   return 0;
 }

@@ -42,7 +42,7 @@ Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int
   }
 
   // Place new instance at the top of the list.
-  layer->instances->next = instance;
+  instance->next = layer->instances;
   layer->instances = instance;
 
   // Setup the handle
@@ -136,7 +136,7 @@ int Splat_SetInstanceLayer(Splat_Instance *instance, Splat_Layer *layer) {
 }
 
 int Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, float s1, float t1, float s2, float t2) {
-  if (!instance || !layer) {
+  if (!instance || !image) {
     Splat_SetError("Splat_SetInstanceLayer:  Invalid argument.");
     return -1;
   }

@@ -294,7 +294,7 @@ DECLSPEC const char *SDLCALL Splat_GetError();
  *
  * @param error - The error string to set, or NULL to clear the error string.
  */
-DECLSPEC void SDLCALL Splat_SetError(const char *error);
+DECLSPEC void SDLCALL Splat_SetError(const char *error, ...);
 
 /**
  * Convenience macro to clear the current Splat error string

@@ -19,9 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include <stdarg.h>
+#include <stdio.h>
 #include "splat.h"
 
 static const char *error = nullptr;
+static char buffer[256];
 
 extern "C"
 {
@@ -30,8 +33,18 @@ const char *Splat_GetError() {
   return error;
 }
 
-void Splat_SetError(const char *errorMsg) {
-  error = errorMsg;
+void Splat_SetError(const char *errorMsg, ...) {
+  if (!errorMsg) {
+    error = NULL;
+    return;
+  }
+
+  va_list args;
+  va_start(args, errorMsg);
+  vsnprintf(buffer, 256, errorMsg, args);
+  va_end(args);
+
+  error = buffer;
 }
 
 } // extern "C"

@@ -10,7 +10,7 @@ if TARGET not in [ "debug", "release" ]:
 	Exit(1)
 
 baseflags = "-fvisibility=internal -fvisibility-inlines-hidden"
-CFLAGS = "-fno-common -Wall {}".format(baseflags).split()
+CFLAGS = "-fno-common -fpermissive -Wall {}".format(baseflags).split()
 LINKFLAGS = "{} -lGL -lGLU -lSDL2".format(baseflags).split()
 
 if TARGET == "debug":

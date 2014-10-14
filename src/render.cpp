@@ -261,55 +261,55 @@ int Splat_Render(Splat_Canvas *canvas) {
     glDisableClientState(GL_TEXTURE_COORD_ARRAY); ERRCHECK();
     glVertexPointer(2, GL_FLOAT, 0, &vertex_buffer); ERRCHECK();
 
-    for (Splat_Rect *prev = NULL, *curr = canvas->rects; curr != NULL; prev = curr, curr = curr->next) {
-      glColor4ub(rect.color.r, rect.color.g, rect.color.b, rect.color.a); ERRCHECK();
+    for (Splat_Rect *prev = NULL, *curr = canvas->rects; curr != NULL; /**/) {
+      glColor4ub(curr->color.r, curr->color.g, curr->color.b, curr->color.a); ERRCHECK();
 
       // Save the current matrix
       glPushMatrix(); ERRCHECK();
 
-      if (!rect.relative) {
+      if (!curr->relative) {
         // Translate to the active canvas's current location
         glTranslatef(-canvas->origin.x, -canvas->origin.y, 0.0f); ERRCHECK();
       }
 
-      glLineWidth(rect.width); ERRCHECK();
+      glLineWidth(curr->width); ERRCHECK();
 
       // Prepare to render rects
-      if (rect.fill) {
+      if (curr->fill) {
         // First triangle
-        vertex_buffer[0] = rect.x1;
-        vertex_buffer[1] = rect.y1;
+        vertex_buffer[0] = curr->x1;
+        vertex_buffer[1] = curr->y1;
 
-        vertex_buffer[2] = rect.x2;
-        vertex_buffer[3] = rect.y1;
+        vertex_buffer[2] = curr->x2;
+        vertex_buffer[3] = curr->y1;
 
-        vertex_buffer[4] = rect.x1;
-        vertex_buffer[5] = rect.y2;
+        vertex_buffer[4] = curr->x1;
+        vertex_buffer[5] = curr->y2;
 
         // Second triangle
-        vertex_buffer[6] = rect.x2;
-        vertex_buffer[7] = rect.y2;
+        vertex_buffer[6] = curr->x2;
+        vertex_buffer[7] = curr->y2;
 
-        vertex_buffer[8] = rect.y1;
-        vertex_buffer[9] = rect.y2;
+        vertex_buffer[8] = curr->y1;
+        vertex_buffer[9] = curr->y2;
 
-        vertex_buffer[10] = rect.x2;
-        vertex_buffer[11] = rect.x1;
+        vertex_buffer[10] = curr->x2;
+        vertex_buffer[11] = curr->x1;
 
         // Finished with our triangles
         glDrawArrays(GL_TRIANGLES, 0, 6); ERRCHECK();
       } else {
-        vertex_buffer[0] = rect.x1;
-        vertex_buffer[1] = rect.y1;
+        vertex_buffer[0] = curr->x1;
+        vertex_buffer[1] = curr->y1;
 
-        vertex_buffer[2] = rect.x2;
-        vertex_buffer[3] = rect.y1;
+        vertex_buffer[2] = curr->x2;
+        vertex_buffer[3] = curr->y1;
 
-        vertex_buffer[4] = rect.x2;
-        vertex_buffer[5] = rect.y2;
+        vertex_buffer[4] = curr->x2;
+        vertex_buffer[5] = curr->y2;
 
-        vertex_buffer[6] = rect.x1;
-        vertex_buffer[7] = rect.y2;
+        vertex_buffer[6] = curr->x1;
+        vertex_buffer[7] = curr->y2;
 
         // Finished with our lines
         glDrawArrays(GL_LINE_LOOP, 0, 4); ERRCHECK();
@@ -319,41 +319,56 @@ int Splat_Render(Splat_Canvas *canvas) {
       glPopMatrix(); ERRCHECK();
 
       // Expire old rects
-      if (time >= rect.ttl) {
-        it = canvas->rects.erase_after(itPrev);
+      if (time >= curr->ttl) {
+        if (prev) {
+          prev->next = curr->next;
+        } else {
+          canvas->rects = curr->next;
+        }
+        
+        Splat_Rect *old = curr;
+        curr = curr->next;
+        free(old);
       } else {
-        itPrev = it;
-        ++it;
+        prev = curr;
+        curr = curr->next;
       }
     }
   }
 
-  if (!canvas->lines.empty()) {
+  if (canvas->lines) {
     glDisable(GL_TEXTURE_2D); ERRCHECK();
     glEnableClientState(GL_VERTEX_ARRAY); ERRCHECK();
     glDisableClientState(GL_TEXTURE_COORD_ARRAY); ERRCHECK();
-    for (auto itPrev = canvas->lines.before_begin(), it = canvas->lines.begin(); it != canvas->lines.end(); /**/) {
-      const Splat_Line &line = *it;
-      glColor4ub(line.color.r, line.color.g, line.color.b, line.color.a); ERRCHECK();
+    for (Splat_Line *prev = NULL, *curr = canvas->lines; curr != NULL; /**/) {
+      glColor4ub(curr->color.r, curr->color.g, curr->color.b, curr->color.a); ERRCHECK();
 
-      if (!line.relative) {
+      if (!curr->relative) {
         // Translate to the active canvas's current location
         glTranslatef(-canvas->origin.x, -canvas->origin.y, 0.0f); ERRCHECK();
       }
 
-      glLineWidth(line.width); ERRCHECK();
+      glLineWidth(curr->width); ERRCHECK();
 
-      glVertexPointer(2, GL_FLOAT, 0, &line.start.x); ERRCHECK();
+      glVertexPointer(2, GL_FLOAT, 0, &curr->start.x); ERRCHECK();
 
       // Finished with our triangles
       glDrawArrays(GL_LINES, 0, 2); ERRCHECK();
 
       // Expire old lines
-      if (time >= line.ttl) {
-        it = canvas->lines.erase_after(itPrev);
+      if (time >= curr->ttl) {
+        if (prev) {
+          prev->next = curr->next;
+        } else {
+          canvas->lines = curr->next;
+        }
+
+        Splat_Line *old = curr;
+        curr = curr->next;
+        free(old);
       } else {
-        itPrev = it;
-        ++it;
+        prev = curr;
+        curr = curr->next;
       }
     }
   }

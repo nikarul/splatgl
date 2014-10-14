@@ -48,8 +48,8 @@ typedef struct Splat_Instance {
   uint32_t flags;
   Splat_Instance *nextCulledHandle;
   SDL_Rect clip; /* If not empty, the image is clipped to this rect */
-  Splat_Image *next;
-} Splat_Image;
+  Splat_Instance *next;
+} Splat_Instance;
 
 typedef struct Splat_Layer {
   Splat_Canvas *canvas;
@@ -67,6 +67,7 @@ typedef struct Splat_Rect {
   uint32_t ttl;
   bool relative;
   bool fill;
+  struct Splat_Rect *next;
 } Splat_Rect;
 
 typedef struct Splat_Line {
@@ -76,6 +77,7 @@ typedef struct Splat_Line {
 	int width;
 	uint32_t ttl;
   bool relative;
+  struct Splat_Line *next;
 } Splat_Line;
 
 //struct Splat_Shader {

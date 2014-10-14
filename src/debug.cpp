@@ -32,20 +32,27 @@ int Splat_DrawRect(Splat_Canvas *canvas, SDL_Rect *rect, SDL_Color *color, int w
     return -1;
   }
 
-  // Allocate the surface for this context
-  canvas->rects.emplace_front();
-  Splat_Rect &r(canvas->rects.front());
+  // Allocate the rect
+  Splat_Rect *r = malloc(sizeof(Splat_Rect));
+  if (!r) {
+    Splat_SetError("Splat_DrawRect:  Allocation failed.");
+    return -1;
+  }
 
-  r.x1 = rect->x;
-  r.x2 = rect->x + rect->w;
-  r.y1 = rect->y;
-  r.y2 = rect->y + rect->h;
+  // Place new rect at the top of the list.
+  r->next = canvas->rects;
+  canvas->rects = r;
 
-  r.width = width;
-  memcpy(&r.color, color, sizeof(SDL_Color));
-  r.ttl = ttl;
-  r.relative = ((flags & SPLAT_RELATIVE) != 0);
-  r.fill = ((flags & SPLAT_FILLED) != 0);
+  r->x1 = rect->x;
+  r->x2 = rect->x + rect->w;
+  r->y1 = rect->y;
+  r->y2 = rect->y + rect->h;
+
+  r->width = width;
+  memcpy(&r->color, color, sizeof(SDL_Color));
+  r->ttl = ttl;
+  r->relative = ((flags & SPLAT_RELATIVE) != 0);
+  r->fill = ((flags & SPLAT_FILLED) != 0);
 
   return 0;
 }
@@ -56,16 +63,23 @@ int Splat_DrawLine(Splat_Canvas *canvas, SDL_Point *start, SDL_Point *end, SDL_C
     return -1;
   }
 
-  // Allocate the surface for this context
-  canvas->lines.emplace_front();
-  Splat_Line &line(canvas->lines.front());
+  // Allocate the line
+  Splat_Line *line = malloc(sizeof(Splat_Line));
+  if (!line) {
+    Splat_SetError("Splat_DrawLine:  Allocation failed.");
+    return -1;
+  }
 
-  memcpy(&line.start, start, sizeof(SDL_Point));
-  memcpy(&line.end, end, sizeof(SDL_Point));
-  memcpy(&line.color, color, sizeof(SDL_Color));
-  line.width = width;
-  line.ttl = ttl;
-  line.relative = ((flags & SPLAT_RELATIVE) != 0);
+  // Place new line at the top of the list.
+  line->next = canvas->lines;
+  canvas->lines = line;
+
+  memcpy(&line->start, start, sizeof(SDL_Point));
+  memcpy(&line->end, end, sizeof(SDL_Point));
+  memcpy(&line->color, color, sizeof(SDL_Color));
+  line->width = width;
+  line->ttl = ttl;
+  line->relative = ((flags & SPLAT_RELATIVE) != 0);
 
   return 0;
 }
