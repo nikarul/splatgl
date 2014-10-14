@@ -23,16 +23,14 @@
 #include <SDL_opengl.h>
 #include <GL/glu.h>
 
-#include <algorithm>
-#include <sstream>
 #include "splat.h"
 #include "canvas.h"
 #include "types.h"
 
 #define MASK_IMAGEMOD (SPLAT_MIRROR_X | SPLAT_MIRROR_Y | SPLAT_MIRROR_DIAG | SPLAT_ROTATE)
 
-SDL_Window *window = nullptr;
-SDL_GLContext window_glcontext = nullptr;
+SDL_Window *window = NULL;
+SDL_GLContext window_glcontext = NULL;
 GLuint framebuffer = 0;
 GLuint frameTexture = 0;
 int viewportWidth = 0;
@@ -48,13 +46,7 @@ static float texcoord_buffer[12]; /* TexCoord buffer */
   { \
     GLenum err = glGetError(); \
     if (err != GL_NO_ERROR) { \
-      std::stringstream buffer("OpenGL error(s): "); \
-      do { \
-        buffer << err << " "; \
-        err = glGetError(); \
-      } while (err != GL_NO_ERROR); \
-      buffer << "at " __FILE__ ":" << __LINE__; \
-      Splat_SetError(buffer.str().c_str()); \
+      Splat_SetError("Splat_Render:  An OpenGL (%d) error occurred while renderering at " __FILE__ ":%d", err, __LINE__); \
       return -1; \
     } \
   }
@@ -119,13 +111,13 @@ int Splat_Render(Splat_Canvas *canvas) {
   viewRect.h = viewportHeight;
 
   float depth = 0.0f;
-  for (Splat_Layer &layer : canvas->layers) {
-    for (Splat_Instance &instance : layer.instances) {
+  for (Splat_Layer *layer = canvas->layers; layer != NULL; layer = layer->next) {
+    for (Splat_Instance *instance = layer->instances; instance != NULL; instance = instance->next) {
       //TODO do this once per texture
       // Bind our texture
-      glBindTexture(GL_TEXTURE_2D, instance.texture); ERRCHECK();
+      glBindTexture(GL_TEXTURE_2D, instance->texture); ERRCHECK();
 
-      if ((instance.flags & SPLAT_RELATIVE) != 0 && !SDL_HasIntersection(&instance.rect, &viewRect)) {
+      if ((instance->flags & SPLAT_RELATIVE) != 0 && !SDL_HasIntersection(&instance->rect, &viewRect)) {
         continue;
       }
 
@@ -133,62 +125,62 @@ int Splat_Render(Splat_Canvas *canvas) {
       glPushMatrix(); ERRCHECK();
 
       // If relative, translate to the active canvas' current location
-      if (instance.flags & SPLAT_RELATIVE) {
+      if (instance->flags & SPLAT_RELATIVE) {
         glTranslatef(-canvas->origin.x, -canvas->origin.y, 0.0f); ERRCHECK();
       }
 
       // Translate to the images current location
-      glTranslatef(instance.rect.x, instance.rect.y, 0.0f); ERRCHECK();
+      glTranslatef(instance->rect.x, instance->rect.y, 0.0f); ERRCHECK();
 
       // Set color for rendering
-      glColor4ub(instance.color.r, instance.color.g, instance.color.b, instance.color.a); ERRCHECK();
+      glColor4ub(instance->color.r, instance->color.g, instance->color.b, instance->color.a); ERRCHECK();
 
       // Scale the render rect
-      scaledRect.x = instance.rect.x;
-      scaledRect.y = instance.rect.y;
-      scaledRect.w = instance.rect.w * instance.scale[0];
-      scaledRect.h = instance.rect.h * instance.scale[1];
+      scaledRect.x = instance->rect.x;
+      scaledRect.y = instance->rect.y;
+      scaledRect.w = instance->rect.w * instance->scale[0];
+      scaledRect.h = instance->rect.h * instance->scale[1];
 
       // Handle rotation
-      if (instance.flags & MASK_IMAGEMOD) {
+      if (instance->flags & MASK_IMAGEMOD) {
         const float w2 = ((float) scaledRect.w) / 2.0f;
         const float h2 = ((float) scaledRect.h) / 2.0f;
 
         glTranslatef(w2, h2, 0.0f); ERRCHECK();
 
-        if (instance.flags & SPLAT_MIRROR_DIAG) {
+        if (instance->flags & SPLAT_MIRROR_DIAG) {
           glRotatef(-90.0f, 0.0f, 0.0f, 1.0f); ERRCHECK();
-          if ((instance.flags & SPLAT_MIRROR_X)) {
+          if ((instance->flags & SPLAT_MIRROR_X)) {
             glScalef(1.0f, -1.0f, 1.0f); ERRCHECK();
           }
-          if ((instance.flags & SPLAT_MIRROR_Y) == 0) {
+          if ((instance->flags & SPLAT_MIRROR_Y) == 0) {
             glScalef(-1.0f, 1.0f, 1.0f); ERRCHECK();
           }
         } else {
-          if (instance.flags & SPLAT_MIRROR_X) {
+          if (instance->flags & SPLAT_MIRROR_X) {
             glScalef(-1.0f, 1.0f, 1.0f); ERRCHECK();
           }
-          if (instance.flags & SPLAT_MIRROR_Y) {
+          if (instance->flags & SPLAT_MIRROR_Y) {
              glScalef(1.0f, -1.0f, 1.0f); ERRCHECK();
           }
         }
-        if (instance.flags & SPLAT_ROTATE) {
-          glRotatef(instance.angle, 0.0f, 0.0f, 1.0f); ERRCHECK();
+        if (instance->flags & SPLAT_ROTATE) {
+          glRotatef(instance->angle, 0.0f, 0.0f, 1.0f); ERRCHECK();
         }
 
         glTranslatef(-w2, -h2, 0.0f); ERRCHECK();
       }
 
       // Handle scissoring
-      if (!SDL_RectEmpty(&instance.clip)) {
+      if (!SDL_RectEmpty(&instance->clip)) {
         // Enable scissoring
         glEnable(GL_SCISSOR_TEST); ERRCHECK();
 
         // Snip, snip, snip...
         if (scaledCanvas) {
-          glScissor(instance.clip.x * canvas->scale[0], winheight - ((instance.clip.y + instance.clip.h) * canvas->scale[1]), instance.clip.w * canvas->scale[0], instance.clip.h * canvas->scale[1]); ERRCHECK();
+          glScissor(instance->clip.x * canvas->scale[0], winheight - ((instance->clip.y + instance->clip.h) * canvas->scale[1]), instance->clip.w * canvas->scale[0], instance->clip.h * canvas->scale[1]); ERRCHECK();
         } else {
-          glScissor(instance.clip.x, winheight - (instance.clip.y + instance.clip.h), instance.clip.w, instance.clip.h); ERRCHECK();
+          glScissor(instance->clip.x, winheight - (instance->clip.y + instance->clip.h), instance->clip.w, instance->clip.h); ERRCHECK();
         }
       } else {
         // Disable scissoring
@@ -198,50 +190,50 @@ int Splat_Render(Splat_Canvas *canvas) {
       // Prepare to render triangles
 
       // First triangle
-      //glTexCoord2f(instance.s1, instance.t2);
-      texcoord_buffer[0] = instance.s1;
-      texcoord_buffer[1] = instance.t2;
+      //glTexCoord2f(instance->s1, instance->t2);
+      texcoord_buffer[0] = instance->s1;
+      texcoord_buffer[1] = instance->t2;
       //glVertex3f(0.0f, scaled_rect.h, depth);
       vertex_buffer[0] = 0.0f;
       vertex_buffer[1] = scaledRect.h;
       vertex_buffer[2] = depth;
 
-      //glTexCoord2f(instance.s1, instance.t1);
-      texcoord_buffer[2] = instance.s1;
-      texcoord_buffer[3] = instance.t1;
+      //glTexCoord2f(instance->s1, instance->t1);
+      texcoord_buffer[2] = instance->s1;
+      texcoord_buffer[3] = instance->t1;
       //glVertex3f(0.0f, 0.0f, depth);
       vertex_buffer[3] = 0.0f;
       vertex_buffer[4] = 0.0f;
       vertex_buffer[5] = depth;
 
-      //glTexCoord2f(instance.s2, instance.t1);
-      texcoord_buffer[4] = instance.s2;
-      texcoord_buffer[5] = instance.t1;
+      //glTexCoord2f(instance->s2, instance->t1);
+      texcoord_buffer[4] = instance->s2;
+      texcoord_buffer[5] = instance->t1;
       //glVertex3f(scaled_rect.w, 0.0f, depth);
       vertex_buffer[6] = scaledRect.w;
       vertex_buffer[7] = 0.0f;
       vertex_buffer[8] = depth;
 
       // Second triangle
-      //glTexCoord2f(instance.s2, instance.t2);
-      texcoord_buffer[6] = instance.s2;
-      texcoord_buffer[7] = instance.t2;
+      //glTexCoord2f(instance->s2, instance->t2);
+      texcoord_buffer[6] = instance->s2;
+      texcoord_buffer[7] = instance->t2;
       //glVertex3f(scaled_rect.w, scaled_rect.h, depth);
       vertex_buffer[9] = scaledRect.w;
       vertex_buffer[10] = scaledRect.h;
       vertex_buffer[11] = depth;
 
-      //glTexCoord2f(instance.s1, instance.t2);
-      texcoord_buffer[8] = instance.s1;
-      texcoord_buffer[9] = instance.t2;
+      //glTexCoord2f(instance->s1, instance->t2);
+      texcoord_buffer[8] = instance->s1;
+      texcoord_buffer[9] = instance->t2;
       //glVertex3f(0.0f, scaled_rect.h, depth);
       vertex_buffer[12] = 0.0f;
       vertex_buffer[13] = scaledRect.h;
       vertex_buffer[14] = depth;
 
-      //glTexCoord2f(instance.s2, instance.t1);
-      texcoord_buffer[10] = instance.s2;
-      texcoord_buffer[11] = instance.t1;
+      //glTexCoord2f(instance->s2, instance->t1);
+      texcoord_buffer[10] = instance->s2;
+      texcoord_buffer[11] = instance->t1;
       //glVertex3f(scaled_rect.w, 0.0f, depth);
       vertex_buffer[15] = scaledRect.w;
       vertex_buffer[16] = 0.0f;
@@ -263,14 +255,13 @@ int Splat_Render(Splat_Canvas *canvas) {
   uint32_t time = SDL_GetTicks();
 
   // Draw rects
-  if (!canvas->rects.empty()) {
+  if (canvas->rects) {
     glDisable(GL_TEXTURE_2D); ERRCHECK();
     glEnableClientState(GL_VERTEX_ARRAY); ERRCHECK();
     glDisableClientState(GL_TEXTURE_COORD_ARRAY); ERRCHECK();
     glVertexPointer(2, GL_FLOAT, 0, &vertex_buffer); ERRCHECK();
 
-    for (auto itPrev = canvas->rects.before_begin(), it = canvas->rects.begin(); it != canvas->rects.end(); /**/) {
-      const Splat_Rect& rect = *it;
+    for (Splat_Rect *prev = NULL, *curr = canvas->rects; curr != NULL; prev = curr, curr = curr->next) {
       glColor4ub(rect.color.r, rect.color.g, rect.color.b, rect.color.a); ERRCHECK();
 
       // Save the current matrix

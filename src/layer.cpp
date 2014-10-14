@@ -19,42 +19,54 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include <algorithm>
 #include <SDL.h>
 #include <SDL_opengl.h>
 #include "splat.h"
 #include "types.h"
 #include "canvas.h"
 
-extern "C" {
+extern "C"
+{
 
 Splat_Layer *Splat_CreateLayer(Splat_Canvas *canvas) {
   if (!canvas) {
-	Splat_SetError("Splat_CreateLayer:  Invalid argument.");
-	return nullptr;
+    Splat_SetError("Splat_CreateLayer:  Invalid argument.");
+    return NULL;
   }
 
-  // ALlocate the surface for this context
-  canvas->layers.emplace_back();
-  Splat_Layer &layer(canvas->layers.back());
+  // Allocate the layer
+  Splat_Layer *layer = malloc(sizeof(Splat_Layer));
+  if (!layer) {
+    Splat_SetError("Splat_CreateLayer:  Allocation failed.");
+    return NULL;
+  }
 
-  //TODO init layer
+  // Place new image at the top of the list.
+  layer->canvas = canvas;
+  layer->instances = NULL;
+  layer->next = canvas->layers;
+  canvas->layers = layer;
 
-  return &layer;
+  return layer;
 }
 
 int Splat_DestroyLayer(Splat_Layer *layer) {
   if (!layer) {
-	Splat_SetError("Splat_DestroyLayer:  Invalid argument.");
-	return -1;
+    Splat_SetError("Splat_DestroyLayer:  Invalid argument.");
+    return -1;
   }
 
-  list<Splat_Layer> &layers = layer->canvas->layers;
-  for (auto it = layers.begin(), end = layers.end(); it != end; ++it) {
-	if (&(*it) == layer) {
-	  layers.erase(it);
-	  return 0;
-	}
+  for (Splat_Layer *prev = NULL, *curr = layers; curr != NULL; prev = curr, curr = curr->next) {
+    if (curr == layer) {
+      if (prev) {
+        prev->next = curr->next;
+      } else {
+        layers = curr->next;
+      }
+
+      free(layer);
+      return 0;
+    }
   }
 
   Splat_SetError("Splat_DestroyLayer:  Layer not found in canvas layers list.");
@@ -62,30 +74,55 @@ int Splat_DestroyLayer(Splat_Layer *layer) {
 }
 
 int Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other) {
-  if (!layer || !other) {
-	Splat_SetError("Splat_MoveLayer:  Invalid argument.");
-	return -1;
+  if (!layer || !other || layer == other) {
+    Splat_SetError("Splat_MoveLayer:  Invalid argument.");
+    return -1;
   }
 
   if (layer->canvas != other->canvas) {
-	Splat_SetError("Splat_MoveLayer:  Layers do not belong to the same canvas.");
-	return -1;
+    Splat_SetError("Splat_MoveLayer:  Layers do not belong to the same canvas.");
+    return -1;
   }
 
-  Splat_Canvas *canvas = layer->canvas;
-  auto itLeft = find(canvas->layers.begin(), canvas->layers.end(), *layer);
-  if (itLeft == canvas->layers.end()) {
-	Splat_SetError("Splat_MoveError:  Layer not found in active canvas.");
-	return -1;
+  Splat_Layer *layerPrev = NULL, *otherPrev = NULL;
+  int found = 0;
+
+  for (Splat_Layer *prev = NULL, *curr = layer->canvas->layers; found < 4 && curr != NULL; prev = curr, curr = curr->next) {
+    if (curr == layer) {
+      layerPrev = prev;
+      assert((found & 1) == 0);
+      found |= 1;
+    }
+
+    if (curr == other) {
+      otherPrev = prev;
+      assert((found & 2) == 0);
+      found |= 2;
+    }
   }
 
-  auto itRight = (other) ? find(canvas->layers.begin(), canvas->layers.end(), *other) : canvas->layers.begin();
-  if (itRight == canvas->layers.end()) {
-	Splat_SetError("Splat_MoveError:  'Other' layer not found in active canvas.");
-	return -1;
+  if (found != 3) {
+    Splat_Error("Splat_MoveLayer:  One or both layers were not found in the canvas");
+    return -1;
   }
 
-  swap(*itLeft, *itRight);
+  // Swap the next pointers for the two layers
+  Splat_Layer *tmp = layer->next;
+  layer->next = other->next;
+  other->next = tmp;
+
+  if (layerPrev) {
+    layerPrev->next = other;
+  } else {
+    canvas->layers = other;
+  }
+
+  if (otherPrev) {
+    otherPrev->next = layer;
+  } else {
+    canvas->layers = layer;
+  }
+
   return 0;
 }
 

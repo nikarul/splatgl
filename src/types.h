@@ -23,22 +23,18 @@
 #define __SPLAT_TYPES_H__
 
 #include <SDL_opengl.h>
-#include <forward_list>
 #include <SDL.h>
 
 using namespace std;
 
-struct Splat_Image {
-  bool operator==(const Splat_Image &other) { return this == &other; }
-
+typedef struct Splat_Image {
   GLuint texture;
   uint32_t width;
   uint32_t height;
-};
+  struct Splat_Image *next;
+} Splat_Image;
 
-struct Splat_Instance {
-  bool operator==(const Splat_Instance &other) { return this == &other; }
-
+typedef struct Splat_Instance {
   GLuint texture;
   SDL_Rect rect;
   float s1;
@@ -52,16 +48,16 @@ struct Splat_Instance {
   uint32_t flags;
   Splat_Instance *nextCulledHandle;
   SDL_Rect clip; /* If not empty, the image is clipped to this rect */
-};
+  Splat_Image *next;
+} Splat_Image;
 
-struct Splat_Layer {
-  bool operator==(const Splat_Layer &other) { return this == &other; }
-
+typedef struct Splat_Layer {
   Splat_Canvas *canvas;
-  forward_list<Splat_Instance> instances;
-};
+  Splat_Instance *instances;
+  struct Splat_Layer *next;
+} Splat_Layer;
 
-struct Splat_Rect {
+typedef struct Splat_Rect {
   int x1;
   int y1;
   int x2;
@@ -71,25 +67,25 @@ struct Splat_Rect {
   uint32_t ttl;
   bool relative;
   bool fill;
-};
+} Splat_Rect;
 
-struct Splat_Line {
+typedef struct Splat_Line {
   SDL_Point start;
 	SDL_Point end;
 	SDL_Color color;
 	int width;
 	uint32_t ttl;
   bool relative;
-};
+} Splat_Line;
 
-struct Splat_Shader {
-  int type;
-  GLuint shader;
-};
-
-struct Splat_Program {
-  GLuint program;
-};
+//struct Splat_Shader {
+//  int type;
+//  GLuint shader;
+//};
+//
+//struct Splat_Program {
+//  GLuint program;
+//};
 
 #endif // __SPLAT_TYPES_H__
 

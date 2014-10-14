@@ -19,8 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include <sstream>
-
 #define GL_GLEXT_PROTOTYPES
 #include <SDL_opengl.h>
 #include <GL/glu.h>
@@ -56,19 +54,7 @@ int Splat_Prepare(SDL_Window *userWindow, int userViewportWidth, int userViewpor
 
   window_glcontext = SDL_GL_CreateContext(window);
   if (!window_glcontext) {
-    std::stringstream buffer;
-    buffer << "OpenGL canvas creation failed.";
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR) {
-      buffer << "  OpenGL error(s): ";
-      do {
-	buffer << err << " ";
-	err = glGetError();
-      } while (err != GL_NO_ERROR);
-    }
-    const char *sdlerr = SDL_GetError();
-    if (sdlerr) { buffer << "  SDL error: " << sdlerr; }
-    Splat_SetError(buffer.str().c_str());
+    Splat_SetError("OpenGL context creation failed.  Check glGetError() and/or SDL_GetError() for more information.")
     Splat_Finish();
     return -1;
   }
@@ -128,8 +114,8 @@ int Splat_Prepare(SDL_Window *userWindow, int userViewportWidth, int userViewpor
 void Splat_Finish() {
   if (window) {
     SDL_GL_DeleteContext(window_glcontext);
-    window_glcontext = nullptr;
-    window = nullptr;
+    window_glcontext = NULL;
+    window = NULL;
   }
 
   CanvasFinish();

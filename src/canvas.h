@@ -22,25 +22,21 @@
 #ifndef __SPLAT_CANVAS_H__
 #define __SPLAT_CANVAS_H__
 
-#include <string>
-#include <forward_list>
-#include <list>
 #include <SDL.h>
 #include "types.h"
 
 using namespace std;
 
-struct Splat_Canvas {
-  bool operator==(const Splat_Canvas &other) { return this == &other; }
-
+typedef struct Splat_Canvas {
   float clearColor[4];
   SDL_Point origin;
   float scale[2]; // Scale factors for X and Y
-  list<Splat_Layer> layers;
-  forward_list<Splat_Rect> rects; // List of debug rects
-  forward_list<Splat_Line> lines; // List of debug lines
+  Splat_Layer *layers;
+  Splat_Rect *rects; // List of debug rects
+  Splat_Line *lines; // List of debug lines
   int blending;
-};
+  struct Splat_Canvas *next;
+} Splat_Canvas;
 
 void CanvasFinish();
 
