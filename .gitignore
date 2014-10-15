@@ -1,12 +1,7 @@
-.sconsign.dblite
 splat.vpw
 splat.vpj
 splat.vtg
 splat.vpwhistu
-*.os
-libsplat.so
-tests/test.o
-tests/test
 Makefile.in
 autom4te.cache/
 config.guess
@@ -15,4 +10,5 @@ configure
 depcomp
 install-sh
 missing
-
+release/
+debug/

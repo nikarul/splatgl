@@ -47,6 +47,9 @@ dnl Setup compiler and linker flags
 CFLAGS='-fvisibility=internal -std=c99 -fno-common -Wall -I$(srcdir)/include'
 LDFLAGS='-lGL -lGLU'
 
+dnl Add debug flag
+AC_ARG_ENABLE(debug, [  --enable-debug    Enable debug mode], CFLAGS=$CFLAGS' -O0 -g -DDEBUG', CFLAGS=$CFLAGS' -O3 -DNDEBUG')
+
 dnl Check for tools
 AC_PROG_LIBTOOL
 AC_PROG_CC

@@ -301,7 +301,7 @@ DECLSPEC void SDLCALL Splat_SetError(const char *error, ...);
  */
 #define Splat_ClearError() Splat_SetError(0)
 
-//TODO
+//TODO SPLAT_SHADERS_EXPERIMENTAL
 //DECLSPEC Splat_Shader *SDLCALL Splat_CreateShader(const char *source, int shaderType);
 //DECLSPEC int SDLCALL Splat_DestroyShader(Splat_Shader *shader);
 //

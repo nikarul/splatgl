@@ -403,6 +403,7 @@ int Splat_Render(Splat_Canvas *canvas) {
   glBindTexture(GL_TEXTURE_2D, frameTexture); ERRCHECK();
   glColor4ub(255, 255, 255, 255); ERRCHECK();
 
+#ifdef SPLAT_SHADERS_EXPERIMENTAL
   glUseProgram(shaderProgram); ERRCHECK();
 
   if (shaderProgram) {
@@ -422,6 +423,7 @@ int Splat_Render(Splat_Canvas *canvas) {
     uniform = glGetUniformLocation(shaderProgram, "rubyOutputSize"); ERRCHECK();
     glUniform2fv(uniform, 1, size); ERRCHECK();
   }
+#endif // SPLAT_SHADERS_EXPERIMENTAL
 
   // First triangle
   //glTexCoord2f(handle->s1, handle->t2);
@@ -476,7 +478,9 @@ int Splat_Render(Splat_Canvas *canvas) {
   // Finished with our triangles
   glDrawArrays(GL_TRIANGLES, 0, 6); ERRCHECK();
 
+#ifdef SPLAT_SHADERS_EXPERIMENTAL
   glUseProgram(0); ERRCHECK();
+#endif // SPLAT_SHADERS_EXPERIMENTAL
 
   // Finish rendering by swap buffers
   SDL_GL_SwapWindow(window);

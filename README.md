@@ -31,8 +31,6 @@ API Cleanup
 Add API sanity checks
 Make a logo
 Upload to Github
-Switch to automake/autoconf
-Dynamically look up GLEXT prototypes
 
 Post publication
 ================
