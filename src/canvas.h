@@ -25,8 +25,6 @@
 #include <SDL.h>
 #include "types.h"
 
-using namespace std;
-
 typedef struct Splat_Canvas {
   float clearColor[4];
   SDL_Point origin;

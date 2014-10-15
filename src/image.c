@@ -26,9 +26,6 @@
 
 static Splat_Image *images = NULL;
 
-extern "C"
-{
-
 Splat_Image *Splat_CreateImage(SDL_Surface *surface) {
   if (!surface) {
     Splat_SetError("Splat_CreateImage:  Invalid argument.");
@@ -128,6 +125,4 @@ int Splat_GetImageSize(Splat_Image *image, uint32_t *width, uint32_t *height) {
   *height = image->height;
   return 0;
 }
-
-} // extern "C"
 

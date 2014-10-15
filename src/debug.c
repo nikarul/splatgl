@@ -23,9 +23,6 @@
 #include "types.h"
 #include "canvas.h"
 
-extern "C"
-{
-
 int Splat_DrawRect(Splat_Canvas *canvas, SDL_Rect *rect, SDL_Color *color, int width, int flags, int ttl) {
   if (!canvas || !rect || !color) {
     Splat_SetError("Invalid argument");
@@ -83,6 +80,4 @@ int Splat_DrawLine(Splat_Canvas *canvas, SDL_Point *start, SDL_Point *end, SDL_C
 
   return 0;
 }
-
-} // extern "C"
 

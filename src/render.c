@@ -51,9 +51,6 @@ static float texcoord_buffer[12]; /* TexCoord buffer */
     } \
   }
 
-extern "C"
-{
-
 int Splat_Render(Splat_Canvas *canvas) {
   if (!canvas) {
     Splat_SetError("Splat_Render:  Invalid argument.");
@@ -513,6 +510,4 @@ int Splat_Render(Splat_Canvas *canvas) {
 
   return 0;
 }
-
-} // extern "C"
 

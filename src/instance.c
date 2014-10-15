@@ -25,9 +25,6 @@
 #include "types.h"
 #include "canvas.h"
 
-extern "C"
-{
-
 Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int x, int y, float s1, float t1, float s2, float t2, uint32_t flags) {
   if (!layer) {
 	Splat_SetError("Splat_CreateInstance:  Invalid argument");
@@ -149,6 +146,4 @@ int Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, float s
 
   return 0;
 }
-
-} // extern "C"
 

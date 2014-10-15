@@ -22,10 +22,9 @@
 #ifndef __SPLAT_TYPES_H__
 #define __SPLAT_TYPES_H__
 
+#include <stdbool.h>
 #include <SDL_opengl.h>
 #include <SDL.h>
-
-using namespace std;
 
 typedef struct Splat_Image {
   GLuint texture;

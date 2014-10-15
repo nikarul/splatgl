@@ -26,9 +26,6 @@
 #include "types.h"
 #include "canvas.h"
 
-extern "C"
-{
-
 Splat_Layer *Splat_CreateLayer(Splat_Canvas *canvas) {
   if (!canvas) {
     Splat_SetError("Splat_CreateLayer:  Invalid argument.");
@@ -136,6 +133,4 @@ int Splat_MoveLayer(Splat_Layer *layer, Splat_Layer *other) {
 
   return 0;
 }
-
-} // extern "C"
 

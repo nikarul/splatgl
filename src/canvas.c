@@ -36,9 +36,6 @@ static inline float clamp(float value, float lower, float upper) {
   return fminf(upper, fmaxf(lower, value));
 }
 
-extern "C"
-{
-
 Splat_Canvas *Splat_CreateCanvas() {
   // Allocate the surface for this context
   Splat_Canvas *canvas = malloc(sizeof(Splat_Canvas));
@@ -144,6 +141,4 @@ int Splat_SetScale(Splat_Canvas *canvas, float x, float y) {
 
   return 0;
 }
-
-} // extern "C"
 

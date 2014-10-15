@@ -34,10 +34,6 @@ extern GLuint frameTexture;
 extern int viewportWidth;
 extern int viewportHeight;
 
-// Public API
-extern "C"
-{
-
 int Splat_Prepare(SDL_Window *userWindow, int userViewportWidth, int userViewportHeight) {
   int width, height;
   window = userWindow;
@@ -120,6 +116,4 @@ void Splat_Finish() {
 
   CanvasFinish();
 }
-
-} // extern "C"
 

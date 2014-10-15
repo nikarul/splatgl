@@ -19,18 +19,22 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include "splat.h"
 
-static const char *error = nullptr;
+static const char *error = NULL;
 static char buffer[256];
 
-extern "C"
-{
-
 const char *Splat_GetError() {
-  return error;
+  if (error) {
+    assert(error == buffer);
+    error = NULL;
+    return buffer;
+  }
+
+  return NULL;
 }
 
 void Splat_SetError(const char *errorMsg, ...) {
@@ -46,6 +50,4 @@ void Splat_SetError(const char *errorMsg, ...) {
 
   error = buffer;
 }
-
-} // extern "C"
 
