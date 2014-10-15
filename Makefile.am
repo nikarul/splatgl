@@ -2,7 +2,7 @@
 
 lib_LTLIBRARIES = libsplat.la
 
-libsplatincludedir = $(includedir)/SDL2
+libsplatincludedir = $(includedir)/splat
 libsplatinclude_HEADERS =	\
 	include/splat.h
 

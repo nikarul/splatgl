@@ -122,6 +122,6 @@ OBJCFLAGS=$CFLAGS
 # Finally create all the generated files
 AC_OUTPUT([
 Makefile
-Splat.spec
-Splat.pc
+splat.spec
+splat.pc
 ])
