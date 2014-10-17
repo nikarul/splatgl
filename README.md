@@ -9,31 +9,53 @@ number of layers, each of which contain instances of images created from
 SDL_Surfaces.  These instances can be positioned and changed as needed each
 frame.  There can be multiple canvases, which can be rendered independently.
 
-Splat provides a C/C++ and Python interface.  Splat is written in C++11,
-however the interface is C-only to provide a clean ABI, although it is
-perfectly usable in C++.  As Splat is currently in development, the ABI is not
-stable, however once version 1.0, the plan is to guarantee a stable ABI within
-major versions of the library.
-
-This library is distributed under the zlib license, which can be found in the
-file "COPYING".  It is the same license used by SDL 2.0.
+This library is distributed under the zlib license, which can be found in
+the file "COPYING".
 
 Contributing
 ============
 
+The most straightforward way to start contributing is to use it in a project
+and provide feedback/bug reports. Patches and pull requests for bug fixes and
+new features are welcome.
 
+Splat is still under development, and it's API is still evolving.  Some plans
+for the future include:
+
+* Allowing Canvases to be attached to different SDL_Windows, by moving much
+of the Splat_Prepare() logic to Splat_CreateCanvas().
+
+* Support for transitioning between canvases and renderering multiple
+canvases on the same window.
+
+* Adding support for using shaders with Splat images.  Primarily for
+supporting effects with fragment shaders, but allowing other types of shaders
+as well.
+
+* Support for static images, images which are added to a canvas and cannot
+be changed or removed for the lifetime of the canvas.
+
+* Better validation of arugments public functions.
+
+* Finishing Doxygen comments in splat.h and generating documentation from
+them.
+
+* Proper memory clean up, don't rely on the calling application to clean up
+all open handles prior to calling Splat_Finish().
+
+* Porting to more SDL/OpenGL supported platforms, including OpenGL ES
+platforms.
+
+* Creation of a sample application or application suite, probably in a
+separate git repository.
+
+* Adding interfaces to more languages beyond Python.
+
+* Stabilizing the API and ABI for a 1.0 release.
 
 TODO
 ====
 Finish README
-Cleanup and generate docs
-API Cleanup
-Add API sanity checks
 Make a logo
 Upload to Github
-
-Post publication
-================
-Multi-window support
-Shader support
 
