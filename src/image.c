@@ -1,6 +1,7 @@
 /*
-  Splat 2D Rendering Library
+  Splat Graphics Library
   Copyright (C) 2014  Michael Dale Long <mlong@digitalbytes.net>
+  http://digitalbytes.net/projects/splatgl/
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages

@@ -27,7 +27,7 @@ BEGIN
             VALUE "InternalName", "Splat\0"
             VALUE "LegalCopyright", "Copyright © 2014 Michael Dale Long\0"
             VALUE "OriginalFilename", "splat.dll\0"
-            VALUE "ProductName", "Splat 2D Rendering Library\0"
+            VALUE "ProductName", "Splat Graphics Library\0"
             VALUE "ProductVersion", "0, 0, 0, 0\0"
         END
     END

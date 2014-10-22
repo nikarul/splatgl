@@ -2,7 +2,7 @@
 %define version @VERSION@
 %define release 1
 
-Summary: Splat 2D Rendering Library
+Summary: Splat Graphics Library
 Name: %{name}
 Version: %{version}
 Release: %{release}
@@ -11,7 +11,7 @@ License: LGPL
 Group: System Environment/Libraries
 BuildRoot: /var/tmp/%{name}-buildroot
 Prefix: %{_prefix}
-Packager: Hakan Tandogan <hakan@iconsult.com>
+Packager: Michael Dale Long <mlong@digitalbytes.net>
 #BuildRequires: SDL2-devel
 
 %description
@@ -23,7 +23,7 @@ scaling.
 Summary: Libraries, includes and more to develop Splat applications.
 Group: Development/Libraries
 Requires: %{name}
-Requires: splat-devel
+Requires: splatgl-devel
 
 %description devel
 Splat is a graphics library based on SDL 2.0 and OpenGL 2.0.  It provides an
@@ -60,8 +60,8 @@ rm -rf $RPM_BUILD_ROOT
 %{prefix}/lib/pkgconfig/*.pc
 
 %changelog
-* Tue Oct 14 2014 Michael Dale Long
-- Created splat.spec.in from SDL2_image.spec.in
+* Tue Oct 14 2014 Michael Dale Long <mlong@digitalbytes.net>
+- Created splatgl.spec.in from SDL2_image.spec.in
 * Wed Jan 19 2000 Sam Lantinga 
 - converted to get package information from configure
 * Tue Jan 18 2000 Hakan Tandogan <hakan@iconsult.com>

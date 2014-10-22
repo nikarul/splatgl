@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.  Based on the SDL_image 2.0 configure.in
-AC_INIT(Splat, 0.0)
+AC_INIT(SplatGL, 0.0)
 AC_CONFIG_SRCDIR(src/splat.c)
 AM_INIT_AUTOMAKE
 
@@ -125,6 +125,6 @@ OBJCFLAGS=$CFLAGS
 # Finally create all the generated files
 AC_OUTPUT([
 Makefile
-splat.spec
-splat.pc
+splatgl.spec
+splatgl.pc
 ])

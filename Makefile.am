@@ -1,12 +1,12 @@
 # Makefile.am for the Splat render library.  Based on the SDL_image 2.0 Makefile.am
 
-lib_LTLIBRARIES = libsplat.la
+lib_LTLIBRARIES = libsplatgl.la
 
-libsplatincludedir = $(includedir)/splat
-libsplatinclude_HEADERS =	\
+libsplatglincludedir = $(includedir)/SplatGL
+libsplatglinclude_HEADERS =	\
 	include/splat.h
 
-libsplat_la_SOURCES =	\
+libsplatgl_la_SOURCES =	\
     src/canvas.c        \
     src/debug.c         \
     src/error.c         \
@@ -23,20 +23,20 @@ EXTRA_DIST =			\
 	autogen.sh
 
 if USE_VERSION_RC
-libsplat_la_LDFLAGS = 	\
+libsplatgl_la_LDFLAGS = 	\
 	-no-undefined		\
 	-release $(LT_RELEASE)	\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE) -Wl,version.o
-libsplat_la_DEPENDENCIES = version.o
+libsplatgl_la_DEPENDENCIES = version.o
 else
-libsplat_la_LDFLAGS = 	\
+libsplatgl_la_LDFLAGS = 	\
 	-no-undefined		\
 	-release $(LT_RELEASE)	\
 	-version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 endif
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = splat.pc
+pkgconfig_DATA = splatgl.pc
 
 %.o : %.rc
 	$(WINDRES) $< $@

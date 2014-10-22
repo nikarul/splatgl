@@ -4,9 +4,9 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: @PACKAGE@
-Description: Splat 2D Rendering Library
+Description: Splat Graphics Library
 Version: @VERSION@
 Requires: sdl2 >= @SDL_VERSION@
-Libs: -L${libdir} -lsplat
-Cflags: -I${includedir}/splat
+Libs: -L${libdir} -lsplatgl
+Cflags: -I${includedir}/SplatGL
 

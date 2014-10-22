@@ -1,8 +1,9 @@
-Splat 2D Rendering Library
+Splat Graphics Library
 ====
-Splat is a graphics library based on SDL 2.0 and OpenGL 2.0.  It provides an
-efficient way to draw 2D sprites with basic effects such as rotation and
-scaling.
+
+Splat is a graphics library based on SDL 2.0 and OpenGL 2.0.  It aims to
+provide an efficient way to draw 2D sprites with basic effects such as
+rotation and scaling.
 
 Splat works by drawing on a canvas object.  A canvas contains an arbitrary
 number of layers, each of which contain instances of images created from
@@ -49,13 +50,11 @@ platforms.
 * Creation of a sample application or application suite, probably in a
 separate git repository.
 
-* Adding interfaces to more languages beyond Python.
+* Adding more language bindings.
 
 * Stabilizing the API and ABI for a 1.0 release.
 
-TODO
-====
-Finish README
-Make a logo
-Upload to Github
+* Review the use of GL_GLEXT_PROTOYPES for OpenGL extension functions and
+determine if it would be better to dynamically load the functions and disable
+them if not available.
 
