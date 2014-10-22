@@ -46,12 +46,12 @@ def _validate_int(result, func, arguments):
 	else:
 		return 0
 
-_libsplat = CDLL("libsplat.so") ###TODO support other OSes/sonames
+_libsplatgl = CDLL("libsplatgl.so") ###TODO support other OSes/sonames
 
 def _bind(name, argtypes=None, restype=None, errcheck=None):
-	func = getattr(_libsplat, name)
+	func = getattr(_libsplatgl, name)
 	if func is None:
-		raise RuntimeException("Failed to bind to function '{}' in libsplat.so".format(name))
+		raise RuntimeException("Failed to bind to function '{}' in libsplatgl.so".format(name))
 
 	func.argtypes = argtypes
 	func.restype = restype
