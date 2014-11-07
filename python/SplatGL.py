@@ -19,6 +19,7 @@
 # 3. This notice may not be removed or altered from any source distribution.
 
 from ctypes import CDLL, c_char_p, c_uint32, c_int, c_float, Structure, POINTER, byref
+from ctypes.util import find_library
 from sdl2 import SDL_Rect, SDL_Point, SDL_Surface, SDL_Window, SDL_Color
 from enum import IntEnum
 
@@ -46,7 +47,8 @@ def _validate_int(result, func, arguments):
 	else:
 		return 0
 
-_libsplatgl = CDLL("libsplatgl.so") ###TODO support other OSes/sonames
+_dllname = find_library("splatgl")
+_libsplatgl = CDLL(_dllname)
 
 def _bind(name, argtypes=None, restype=None, errcheck=None):
 	func = getattr(_libsplatgl, name)
@@ -93,6 +95,7 @@ destroy_instance = _bind("Splat_DestroyInstance", [POINTER(Splat_Instance)], c_i
 set_instance_position = _bind("Splat_SetInstancePosition", [POINTER(Splat_Instance), c_int, c_int], c_int, _validate_int)
 set_instance_layer = _bind("Splat_SetInstanceLayer", [POINTER(Splat_Instance), POINTER(Splat_Layer)], c_int, _validate_int)
 set_instance_image = _bind("Splat_SetInstanceImage", [POINTER(Splat_Instance), POINTER(Splat_Image), c_float, c_float, c_float, c_float], c_int, _validate_int)
+set_instance_flags = _bind("Splat_SetInstanceFlags", [POINTER(Splat_Instance), c_uint32], c_int, _validate_int)
 set_clear_color = _bind("Splat_SetClearColor", [POINTER(Splat_Canvas), c_float, c_float, c_float, c_float], c_int, _validate_int)
 _get_view_position = _bind("Splat_GetViewPosition", [POINTER(Splat_Canvas), POINTER(SDL_Point)], c_int, _validate_int)
 set_view_position =  _bind("Splat_SetViewPosition", [POINTER(Splat_Canvas), POINTER(SDL_Point)], c_int, _validate_int)

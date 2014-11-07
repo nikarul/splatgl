@@ -28,15 +28,15 @@
 
 Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int x, int y, float s1, float t1, float s2, float t2, uint32_t flags) {
   if (!layer) {
-	Splat_SetError("Splat_CreateInstance:  Invalid argument");
-	return NULL;
+    Splat_SetError("Splat_CreateInstance:  Invalid argument");
+    return NULL;
   }
 
   // Allocate the instance
   Splat_Instance *instance = malloc(sizeof(Splat_Instance));
   if (!instance) {
-	Splat_SetError("Splat_CreateInstance:  Allocation failed.");
-	return NULL;
+    Splat_SetError("Splat_CreateInstance:  Allocation failed.");
+    return NULL;
   }
 
   // Place new instance at the top of the list.
@@ -145,6 +145,16 @@ int Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, float s
   instance->s1 = s1;
   instance->s1 = s1;
 
+  return 0;
+}
+
+int Splat_SetInstanceFlags(Splat_Instance *instance, uint32_t flags) {
+  if (!instance) {
+    Splat_SetError("Splat_SetInstanceFlags:  Invalid argument.");
+    return -1;
+  }
+
+  instance->flags = flags;
   return 0;
 }
 

@@ -188,6 +188,13 @@ DECLSPEC int SDLCALL Splat_SetInstanceLayer(Splat_Instance *instance, Splat_Laye
 DECLSPEC int SDLCALL Splat_SetInstanceImage(Splat_Instance *instance, Splat_Image *image, float s1, float t1, float s2, float t2);
 
 /**
+ * Sets the flags for the specified instance.
+ *
+ * Returns 0 if successful, 1 otherwise.
+ */
+DECLSPEC int SDLCALL Splat_SetInstanceFlags(Splat_Instance *instance, uint32_t flags);
+
+/**
  * Set the default background color.
  *
  * Returns 0 if successful, 1 otherwise.
