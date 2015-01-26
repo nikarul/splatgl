@@ -98,6 +98,55 @@ Splat_Image *Splat_CreateImage(SDL_Surface *surface) {
   return image;
 }
 
+int Splat_UpdateImage(Splat_Image *image, SDL_Surface *surface) {
+  if (!surface || !image) {
+    Splat_SetError("Splat_CreateImage:  Invalid argument.");
+    return 1;
+  }
+
+  // Get the number of channels in the SDL surface
+  GLenum format;
+  if (surface->format->BytesPerPixel == 4) {     // contains an alpha channel
+    if (surface->format->Rmask == 0x000000FF) {
+      format = GL_RGBA;
+    } else {
+      format = GL_BGRA;
+    }
+  } else if (surface->format->BytesPerPixel == 3) {    // no alpha channel
+    if (surface->format->Rmask == 0x000000FF) {
+      format = GL_RGB;
+    } else {
+      format = GL_BGR;
+    }
+  } else {
+    Splat_SetError("SDL_Surface is not true color (24 or 32-bit).");
+    return 1;
+  }
+
+  if (SDL_MUSTLOCK(surface)) {
+    if (!SDL_LockSurface(surface)) {
+      Splat_SetError("Failed to lock surface to upload to OpenGL");
+      return 1;
+    }
+  }
+
+  // Bind the texture object
+  glBindTexture(GL_TEXTURE_2D, image->texture);
+
+  // Edit the texture object's surface data using the information SDL_Surface gives us
+  glTexImage2D(GL_TEXTURE_2D, 0, surface->format->BytesPerPixel, surface->w, surface->h, 0, format, GL_UNSIGNED_BYTE, surface->pixels);
+
+  if (SDL_MUSTLOCK(surface)) {
+    SDL_UnlockSurface(surface);
+  }
+
+  // Set the surface width and height
+  image->width = surface->w;
+  image->height = surface->h;
+
+  return 0;
+}
+
 int Splat_DestroyImage(Splat_Image *image) {
   if (!image) {
     Splat_SetError("Splat_DestroyImage:  Invalid argument.");
@@ -112,6 +161,7 @@ int Splat_DestroyImage(Splat_Image *image) {
         images = curr->next;
       }
 
+      glDeleteTextures(1, &image->texture);
       free(image);
       return 0;
     }

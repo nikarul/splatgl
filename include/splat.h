@@ -89,6 +89,17 @@ DECLSPEC void SDLCALL Splat_Finish();
 DECLSPEC SDLCALL Splat_Image *Splat_CreateImage(SDL_Surface *surface);
 
 /**
+ * Updates a Splat image to use the given SDL_Surface. Intended for
+ * dynamic reloading of image assets.
+ *
+ * The application may free the SDL_Surface after the call returns.
+ *
+ *  Returns 0 if successful, 1 otherwise.  The original image will
+ *  remain in use if the update fails.
+ */
+DECLSPEC SDLCALL int Splat_UpdateImage(Splat_Image *image, SDL_Surface *surface);
+
+/**
  * Destroys a Splat image previously created.
  *
  * This will invalidate any active Splat_Instance objects that still

@@ -86,6 +86,7 @@ class Flags(IntEnum):
 prepare = _bind("Splat_Prepare", [POINTER(SDL_Window), c_int, c_int], c_int, _validate_int)
 finish = _bind("Splat_Finish")
 create_image = _bind("Splat_CreateImage", [POINTER(SDL_Surface)], POINTER(Splat_Image), _validate_ptr)
+update_image = _bind("Splat_UpdateImage", [POINTER(Splat_Image), POINTER(SDL_Surface)], c_int, _validate_int)
 destroy_image = _bind("Splat_DestroyImage", [POINTER(Splat_Image)], c_int, _validate_int)
 create_layer = _bind("Splat_CreateLayer", [POINTER(Splat_Canvas)], POINTER(Splat_Layer), _validate_ptr)
 destroy_layer = _bind("Splat_DestroyLayer", [POINTER(Splat_Layer)], c_int, _validate_int)
