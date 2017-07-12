@@ -33,7 +33,6 @@ typedef struct Splat_Canvas {
   Splat_Layer *layers;
   Splat_Rect *rects; // List of debug rects
   Splat_Line *lines; // List of debug lines
-  int blending;
   struct Splat_Canvas *next;
 } Splat_Canvas;
 

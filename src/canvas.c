@@ -53,7 +53,6 @@ Splat_Canvas *Splat_CreateCanvas() {
   canvas->clearColor[0] = canvas->clearColor[1] = canvas->clearColor[2] = 0.0f;
   canvas->clearColor[3] = 1.0f;
   canvas->scale[0] = canvas->scale[1] = 1.0f;
-  canvas->blending = GL_NEAREST;
 
   return canvas;
 }

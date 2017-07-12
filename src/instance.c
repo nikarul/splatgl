@@ -47,8 +47,8 @@ Splat_Instance *Splat_CreateInstance(Splat_Image *image, Splat_Layer *layer, int
   instance->texture = image->texture;
   instance->rect.x = x;
   instance->rect.y = y;
-  instance->rect.w = image->width * (s2 - s1);
-  instance->rect.h = image->height * (t2 - t1);
+  instance->rect.w = roundf(image->width * (s2 - s1));
+  instance->rect.h = roundf(image->height * (t2 - t1));
 
   instance->s1 = s1;
   instance->t1 = t1;

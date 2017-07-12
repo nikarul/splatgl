@@ -86,8 +86,8 @@ int Splat_Render(Splat_Canvas *canvas) {
   glEnable(GL_BLEND); ERRCHECK();
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); ERRCHECK();
 
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, canvas->blending); ERRCHECK();
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, canvas->blending); ERRCHECK();
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); ERRCHECK();
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); ERRCHECK();
 
   // Save the current matrix
   glPushMatrix(); ERRCHECK();
@@ -380,9 +380,6 @@ int Splat_Render(Splat_Canvas *canvas) {
 
   glDisable(GL_BLEND); ERRCHECK();
   glEnable(GL_TEXTURE_2D); ERRCHECK();
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); ERRCHECK();
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); ERRCHECK();
 
   // Specify vertex and tex coord buffers
   glVertexPointer(3, GL_FLOAT, 0, vertex_buffer); ERRCHECK();
