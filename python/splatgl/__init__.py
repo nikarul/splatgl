@@ -48,6 +48,10 @@ def _validate_int(result, func, arguments):
 		return 0
 
 _dllname = find_library("splatgl")
+if _dllname is None:
+    _dllname = find_library("splatgl-0.0")
+if _dllname is None:
+    raise RuntimeException("Unable find SplatGL")
 _libsplatgl = CDLL(_dllname)
 
 def _bind(name, argtypes=None, restype=None, errcheck=None):

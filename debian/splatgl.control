@@ -1,0 +1,10 @@
+Package: splatgl
+Version: 0.0-0
+Section: base
+Priority: optional
+Architecture: amd64
+Depends: libsdl2-2.0-0 (>= 2.0)
+Maintainer: Michael Dale Long <mlong@digitalbytes.net>
+Description: SplatGL
+ A low level open source rendering library for 2D tiles and sprites.
+ Based on OpenGL and SDL2.
